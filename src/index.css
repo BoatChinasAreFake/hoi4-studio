@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg: #101512;
+    --panel: #181e19;
+    --panel-header: #1a211a;
+    --line: #30392e;
+    --line-hover: #3b4936;
+    --text: #e3e5d9;
+    --muted: #909b88;
+    --gold: #d6b878;
+    --gold-dark: #a88e55;
+    --green: #a6bd87;
+    --crimson: #bd785c;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* Focus Forge Brand Heading */
+  .brand-serif {
+    font-family: Georgia, Cambria, 'Times New Roman', serif;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111710;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a3528;
+  border-radius: 3px;
+  border: 1px solid #364231;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3b4936;
+}
+
+/* Authentic HOI4 / Focus Forge Shield Badge */
+.hoi4-badge {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  font-family: Georgia, serif;
+  font-size: 28px;
+  color: #e0c587;
+  background: linear-gradient(145deg, #536044, #1e2b20);
+  border: 2px solid #a88e55;
+  clip-path: polygon(15% 0, 85% 0, 100% 20%, 100% 72%, 50% 100%, 0 72%, 0 20%);
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.7));
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.hoi4-badge:hover {
+  border-color: #d6b878;
+  transform: scale(1.05);
+}
+
+/* Grid workspace background pattern */
+.hoi4-grid-pattern {
+  background-image: radial-gradient(#30392e 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+}
