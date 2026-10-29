@@ -3,7 +3,7 @@ ideologies = {
 	ducalism = {
 		types = {
 			ducalism_court = {
-				can_be_randomly_selected = no
+				can_be_randomly_selected = yes
 			}
 			ducalism_republic = {
 				can_be_randomly_selected = no

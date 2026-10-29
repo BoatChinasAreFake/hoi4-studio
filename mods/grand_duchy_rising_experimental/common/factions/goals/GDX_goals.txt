@@ -5,6 +5,7 @@ faction_goal_gdx_open_borders = {
 	name = gdx_open_borders_goal_name
 	description = gdx_open_borders_goal_desc
 	category = short_term
+	group = FOCUS_FILTER_ANNEXATION
 	visible = { always = yes }
 	completed = { always = no }
 	# Intended reward (apply via complete_effect): production_speed_buildings_factor = 0.05

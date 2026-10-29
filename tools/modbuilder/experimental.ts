@@ -180,7 +180,7 @@ const VARIANT = {
   id: 'gdx_tank',
   name: 'Ducal Tank',
   category: 'tank',
-  chassisType: 'light_tank_chassis',
+  chassisType: 'light_tank_chassis_0',
   year: 1936,
   baseStats: {},
   slots: {},
@@ -200,7 +200,7 @@ const COUNTRY: CountryWizardConfig = {
   stateProvinces: [],
   rulingParty: 'neutrality',
   leaderName: 'Adele Marx',
-  leaderIdeology: 'neutrality',
+  leaderIdeology: 'despotism',
   leaderPortrait: 'GFX_gdx_portrait_leader',
 };
 
@@ -271,7 +271,7 @@ tags={
 }
 name="${EXP_MOD_NAME}"
 picture="thumbnail.png"
-supported_version="1.*"
+supported_version="1.19.*"
 dependencies={
 \t"Grand Duchy Rising"
 }
@@ -295,7 +295,8 @@ export function buildExperimentalMod(): { files: ModFile[]; launcher: ModFile } 
   const faction = generateFactionScript(FACTION);
   t('common/factions/rules/GDX_rules.txt', faction.rulesScript);
   t('common/factions/goals/GDX_goals.txt', faction.goalsScript);
-  t('common/timed_activities/GDX_timed_activities.txt', generateTimedActivityScript(TIMED));
+  // Timed activities are engine-defined (only ids like stage_coup exist), so a custom one cannot load; none is shipped.
+  void generateTimedActivityScript(TIMED);
 
   t('common/resources/GDX_resources.txt', generateResourcesScript(RESOURCES));
   t('common/buildings/GDX_buildings.txt', generateBuildingsScript(BUILDINGS));

@@ -6,4 +6,4 @@ tags={
 }
 name="Grand Duchy Rising"
 picture="thumbnail.png"
-supported_version="1.*"
+supported_version="1.19.*"

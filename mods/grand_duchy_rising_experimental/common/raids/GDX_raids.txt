@@ -6,6 +6,17 @@ types = {
 		days_re_enable = 60
 		command_power = 20
 		allowed = { has_dlc = "Gotterdammerung" }
+		target_icon = GFX_facility_icon
+		launch_sound = raid_launch_air
+		starting_point = {
+			types = { air_base }
+		}
+		unit_requirements = {
+			equipment = {
+				type = { tactical_bomber }
+				amount = { min = 10 }
+			}
+		}
 		arrow = {
 			type = air
 		}

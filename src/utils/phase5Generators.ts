@@ -629,7 +629,12 @@ export function serializeGuiElement(element: GuiElementDef, indentLevel: number 
   let out = `${indent}${element.type} = {\n`;
   out += `${indent}\tname = "${element.name}"\n`;
   out += `${indent}\tposition = { x = ${element.position.x} y = ${element.position.y} }\n`;
-  out += `${indent}\tsize = { width = ${element.size.width} height = ${element.size.height} }\n`;
+  // Only windows and buttons take `size`; icons are sized by their sprite and text boxes use maxWidth/maxHeight.
+  if (element.type === 'containerWindowType' || element.type === 'buttonType') {
+    out += `${indent}\tsize = { width = ${element.size.width} height = ${element.size.height} }\n`;
+  } else if (element.type === 'instantTextBoxType') {
+    out += `${indent}\tmaxWidth = ${element.size.width}\n${indent}\tmaxHeight = ${element.size.height}\n`;
+  }
 
   if (element.orientation) out += `${indent}\torientation = ${element.orientation}\n`;
   if (element.spriteType) out += `${indent}\tspriteType = "${element.spriteType}"\n`;

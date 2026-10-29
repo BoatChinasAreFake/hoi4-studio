@@ -333,7 +333,7 @@ export const IDEAS: Idea[] = [
   { id: 'GDR_ardennes_garrisons', name: 'Ardennes Garrisons', desc: 'Permanent garrisons guard every pass.', picture: 'generic_fortify_the_borders', mods: { army_core_defence_factor: 0.1 } },
   { id: 'GDR_citizen_reserve_idea', name: 'The Citizen Reserve', desc: 'Every citizen knows where to stand.', picture: 'generic_manpower_bonus', mods: { conscription_factor: 0.1, training_time_factor: -0.1 } },
   { id: 'GDR_financial_hub_idea', name: 'A Financial Hub', desc: 'Money flows through the capital.', picture: 'generic_intel_bonus', mods: { political_power_gain: 0.1, stability_factor: 0.05 } },
-  { id: 'GDR_armed_neutrality_idea', name: 'Armed Neutrality', desc: 'Nobody\'s road.', picture: 'generic_fortify_the_borders', mods: { army_core_defence_factor: 0.1, justify_war_goal_when_in_war_time: 0.1 } },
+  { id: 'GDR_armed_neutrality_idea', name: 'Armed Neutrality', desc: 'Nobody\'s road.', picture: 'generic_fortify_the_borders', mods: { army_core_defence_factor: 0.1, justify_war_goal_when_in_major_war_time: 0.1 } },
   { id: 'GDR_total_defense_idea', name: 'Total Defence', desc: 'Every road, bridge and cellar is part of the defence.', picture: 'generic_fortify_the_borders', mods: { army_core_defence_factor: 0.1, army_defence_factor: 0.05 } },
   { id: 'GDR_unbreakable_idea', name: 'The Unbreakable Duchy', desc: 'Regretted by all who tried.', picture: 'generic_fortify_the_borders', mods: { army_core_defence_factor: 0.15, stability_factor: 0.05, war_support_factor: 0.1 } },
   { id: 'GDR_benelux_idea', name: 'The Benelux Pact', desc: 'Three small nations standing together.', picture: 'generic_intel_bonus', mods: { political_power_gain: 0.1, research_speed_factor: 0.05 } },
@@ -364,7 +364,7 @@ const noPortrait = undefined as unknown as CharacterDef['portraits'];
 export const CHARACTERS: CharacterDef[] = [
   { token: 'GDR_general_marie_thill', name: 'Marie Thill', gender: 'female', portraits: noPortrait, corpsCommander: { skill: 3, attack: 2, defense: 4, planning: 3, logistics: 3, traits: [] } },
   { token: 'GDR_general_paul_hoffmann', name: 'Paul Hoffmann', gender: 'male', portraits: noPortrait, corpsCommander: { skill: 2, attack: 3, defense: 2, planning: 2, logistics: 2, traits: [] } },
-  { token: 'GDR_leader_charlotte_weis', name: 'Charlotte Weis', gender: 'female', portraits: noPortrait, countryLeader: { ideology: 'neutrality', traits: [], expire: '1965.1.1', id: -1 } },
+  { token: 'GDR_leader_charlotte_weis', name: 'Charlotte Weis', gender: 'female', portraits: noPortrait, countryLeader: { ideology: 'despotism', traits: [], expire: '1965.1.1', id: -1 } },
   { token: 'GDR_admiral_pierre_lenz', name: 'Pierre Lenz', gender: 'male', portraits: noPortrait, navyLeader: { skill: 2, attack: 2, defense: 2, maneuvering: 2, coordination: 2, traits: [] } },
   { token: 'GDR_scientist_elise_roth', name: 'Elise Roth', gender: 'female', portraits: noPortrait, scientist: { traits: [], specializations: { specialization_nuclear: 2 } } },
   { token: 'GDR_adv_jean_schmit', name: 'Jean Schmit', gender: 'male', portraits: noPortrait, advisor: { allowedTag: 'LUX', slot: 'industrial_concern', ideaToken: 'GDR_adv_jean_schmit', ledger: 'civilian', cost: 100, traits: [], aiWillDo: 1 } },
@@ -655,7 +655,7 @@ tags={
 }
 name="${MOD_NAME}"
 picture="thumbnail.png"
-supported_version="1.*"
+supported_version="1.19.*"
 ${withPath ? `path="mod/${MOD_ID}"\n` : ''}`;
 
 export function buildMod(): { files: ModFile[]; launcher: ModFile } {

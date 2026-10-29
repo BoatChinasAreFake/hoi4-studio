@@ -79,8 +79,8 @@ export function generateGrandDoctrine(g: GrandDoctrineDef): string {
     `${T}name = ${g.id.toUpperCase()}`,
     `${T}description = ${g.id.toUpperCase()}_DESC`,
     `${T}icon = ${g.icon ?? 'GFX_mobile_warfare_medium'}`,
-    `${T}available = yes`,
-    `${T}visible = yes`,
+    `${T}available = { always = yes }`,
+    `${T}visible = { always = yes }`,
     `${T}xp_cost = ${g.xpCost}`,
     `${T}xp_type = ${g.xpType}`,
     `${T}ai_will_do = { }`,
@@ -127,15 +127,16 @@ export function generateSubdoctrines(subs: SubdoctrineDef[], xpType: 'army' | 'n
       `${T}name = ${s.id.toUpperCase()}`,
       `${T}description = ${s.id.toUpperCase()}_DESC`,
       `${T}icon = ${s.icon ?? 'GFX_doctrine_armored_cavalry_medium'}`,
-      `${T}available = yes`,
-      `${T}visible = yes`,
+      `${T}available = { always = yes }`,
+      `${T}visible = { always = yes }`,
       `${T}xp_cost = ${s.xpCost}`,
       `${T}xp_type = ${xpType}`,
       `${T}ai_will_do = { }`,
       ...modifierLines(s.modifiers, 1),
       `${T}rewards = {`
     );
-    for (const r of s.rewards) out.push(`${T}${T}{`, ...modifierLines(r, 3), `${T}${T}}`);
+    // Rewards are named blocks (key = <id>_reward_N for localisation), not anonymous ones.
+    s.rewards.forEach((r, i) => out.push(`${T}${T}reward_${i + 1} = {`, ...modifierLines(r, 3), `${T}${T}}`));
     out.push(`${T}}`);
     if (s.xor && s.xor.length > 0) out.push(`${T}xor = { ${s.xor.join(' ')} }`);
     out.push('}', '');

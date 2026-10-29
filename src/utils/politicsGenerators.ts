@@ -124,6 +124,13 @@ soundeffect = {
     is3d = no
     volume = 1.0
 }
+
+category = {
+    name = "Effects"
+    soundeffects = {
+        ${soundName}
+    }
+}
 `;
 
   // 4. events/SuperEvents_<name>.txt
@@ -685,6 +692,7 @@ export function generateFactionScript(faction: FactionDef): { rulesScript: strin
     goalLines.push(`\tname = ${g.id}_goal_name`);
     goalLines.push(`\tdescription = ${g.id}_goal_desc`);
     goalLines.push(`\tcategory = short_term`);
+    goalLines.push(`\tgroup = FOCUS_FILTER_ANNEXATION`);
     goalLines.push(`\tvisible = { always = yes }`);
     goalLines.push(`\tcompleted = { always = no }`);
     if (Object.keys(g.rewardModifier).length > 0) {
@@ -711,11 +719,12 @@ export function generateIdeologyScript(ideologies: IdeologyDefinition[]): string
   for (const ideo of ideologies) {
     lines.push(`\t${ideo.name} = {`);
     lines.push(`\t\ttypes = {`);
-    for (const st of ideo.subTypes) {
+    ideo.subTypes.forEach((st, i) => {
       lines.push(`\t\t\t${st} = {`);
-      lines.push(`\t\t\t\tcan_be_randomly_selected = no`);
+      // The group needs at least one sub-ideology the game may pick at random, or it logs an error.
+      lines.push(`\t\t\t\tcan_be_randomly_selected = ${i === 0 ? 'yes' : 'no'}`);
       lines.push(`\t\t\t}`);
-    }
+    });
     lines.push(`\t\t}`);
     lines.push(`\t\t# Entries are localisation keys, e.g. FACTION_NAME_${ideo.name.toUpperCase()}_1`);
     lines.push(`\t\tdynamic_faction_names = {`);
@@ -831,7 +840,8 @@ export function generateTimedActivityScript(act: TimedActivity): string {
     .join('\n');
 
   return `# Timed National Activity: ${act.name}
-# Vanilla only supports equipment_need here. Not expressible: duration = ${act.durationDays} days, cancel trigger, on-expire effect.
+# NOTE: the game only accepts engine-defined activity ids here (vanilla ships only stage_coup); a custom id logs
+# "Unexpected token" and is ignored. Vanilla also only supports equipment_need. Not expressible: duration = ${act.durationDays} days, cancel trigger, on-expire effect.
 ${UNVERIFIED_SYNTAX_NOTE('common/timed_activities/', 'medium')}
 ${act.id} = {
 \tequipment_need = {

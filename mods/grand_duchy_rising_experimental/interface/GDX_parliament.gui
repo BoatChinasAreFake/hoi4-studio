@@ -8,151 +8,126 @@ guiTypes = {
 		iconType = {
 			name = "GDX_seat_0"
 			position = { x = 21 y = 90 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_1"
 			position = { x = 22 y = 81 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_2"
 			position = { x = 25 y = 72 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_3"
 			position = { x = 29 y = 63 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_4"
 			position = { x = 34 y = 55 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_5"
 			position = { x = 40 y = 47 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_6"
 			position = { x = 47 y = 40 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_7"
 			position = { x = 55 y = 34 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_8"
 			position = { x = 63 y = 29 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_9"
 			position = { x = 72 y = 25 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_10"
 			position = { x = 81 y = 22 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_11"
 			position = { x = 90 y = 21 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_12"
 			position = { x = 100 y = 20 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_13"
 			position = { x = 110 y = 21 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_14"
 			position = { x = 119 y = 22 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_15"
 			position = { x = 128 y = 25 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_16"
 			position = { x = 137 y = 29 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_17"
 			position = { x = 145 y = 34 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_18"
 			position = { x = 153 y = 40 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_19"
 			position = { x = 160 y = 47 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_20"
 			position = { x = 166 y = 55 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_21"
 			position = { x = 171 y = 63 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_22"
 			position = { x = 175 y = 72 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_23"
 			position = { x = 178 y = 81 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 		iconType = {
 			name = "GDX_seat_24"
 			position = { x = 179 y = 90 }
-			size = { width = 8 height = 8 }
 			spriteType = "GFX_tiled_window_thin_border"
 		}
 	}

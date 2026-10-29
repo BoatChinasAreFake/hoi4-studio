@@ -3,8 +3,8 @@ gdx_ducal_doctrine = {
 	name = GDX_DUCAL_DOCTRINE
 	description = GDX_DUCAL_DOCTRINE_DESC
 	icon = GFX_mobile_warfare_medium
-	available = yes
-	visible = yes
+	available = { always = yes }
+	visible = { always = yes }
 	xp_cost = 100
 	xp_type = army
 	ai_will_do = { }

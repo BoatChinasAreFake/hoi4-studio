@@ -41,7 +41,7 @@ describe('Grand Duchy Rising: Experimental Systems', () => {
     const get = (p: string) => text(files.find((f) => f.path === p)!);
     expect(get('common/resources/GDX_resources.txt')).toContain('icon_frame = 1');
     expect(get('common/resources/GDX_resources.txt')).not.toContain('cic_cost');
-    expect(get('common/timed_activities/GDX_timed_activities.txt')).toContain('equipment_need = {');
+    expect(files.some((f) => f.path.startsWith('common/timed_activities/'))).toBe(false); // custom timed activities cannot load
     expect(get('events/SuperEvents_ducal_dawn.txt')).toContain('sound_effect = gdx_ducal_dawn');
     expect(get('music/GDX_music.txt')).toContain('music_station = "base_music"');
     expect(get('common/special_projects/projects/GDX_projects.txt')).toContain('specialization = specialization_land');

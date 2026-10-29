@@ -66,7 +66,7 @@ ideas = {
 			picture = generic_fortify_the_borders
 			modifier = {
 				army_core_defence_factor = 0.1
-				justify_war_goal_when_in_war_time = 0.1
+				justify_war_goal_when_in_major_war_time = 0.1
 			}
 		}
 

@@ -5,7 +5,7 @@ tags={
 }
 name="Grand Duchy Rising: Experimental Systems"
 picture="thumbnail.png"
-supported_version="1.*"
+supported_version="1.19.*"
 dependencies={
 	"Grand Duchy Rising"
 }

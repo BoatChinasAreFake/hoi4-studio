@@ -13,3 +13,10 @@ soundeffect = {
     is3d = no
     volume = 1.0
 }
+
+category = {
+    name = "Effects"
+    soundeffects = {
+        gdx_ducal_dawn
+    }
+}
