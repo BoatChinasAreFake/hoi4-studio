@@ -1,0 +1,60 @@
+characters = {
+	GDR_general_marie_thill = {
+		name = "Marie Thill"
+		gender = female
+		corps_commander = {
+			skill = 3
+			attack_skill = 2
+			defense_skill = 4
+			planning_skill = 3
+			logistics_skill = 3
+		}
+	}
+	GDR_general_paul_hoffmann = {
+		name = "Paul Hoffmann"
+		gender = male
+		corps_commander = {
+			skill = 2
+			attack_skill = 3
+			defense_skill = 2
+			planning_skill = 2
+			logistics_skill = 2
+		}
+	}
+	GDR_adv_jean_schmit = {
+		name = "Jean Schmit"
+		gender = male
+		advisor = {
+			allowed = { original_tag = LUX }
+			slot = industrial_concern
+			idea_token = GDR_adv_jean_schmit
+			ledger = civilian
+			cost = 100
+			ai_will_do = { factor = 1.0 }
+		}
+	}
+	GDR_adv_anne_weber = {
+		name = "Anne Weber"
+		gender = female
+		advisor = {
+			allowed = { original_tag = LUX }
+			slot = political_advisor
+			idea_token = GDR_adv_anne_weber
+			ledger = civilian
+			cost = 100
+			ai_will_do = { factor = 1.0 }
+		}
+	}
+	GDR_adv_marc_kieffer = {
+		name = "Marc Kieffer"
+		gender = male
+		advisor = {
+			allowed = { original_tag = LUX }
+			slot = high_command
+			idea_token = GDR_adv_marc_kieffer
+			ledger = army
+			cost = 100
+			ai_will_do = { factor = 1.0 }
+		}
+	}
+}

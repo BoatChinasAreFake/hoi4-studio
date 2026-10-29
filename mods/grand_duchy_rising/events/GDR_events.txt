@@ -1,0 +1,192 @@
+add_namespace = gdr
+
+country_event = {
+	id = gdr.1
+	title = gdr.1.t
+	desc = gdr.1.d
+	picture = GFX_report_event_generic_read_write
+	is_triggered_only = yes
+	option = {
+		name = gdr.1.a
+		ai_chance = { base = 1 }
+		add_political_power = 25
+	}
+}
+
+country_event = {
+	id = gdr.2
+	title = gdr.2.t
+	desc = gdr.2.d
+	picture = GFX_report_event_generic_read_write
+	is_triggered_only = yes
+	option = {
+		name = gdr.2.a
+		ai_chance = { base = 1 }
+		add_political_power = 25
+	}
+	option = {
+		name = gdr.2.b
+		ai_chance = { base = 1 }
+		army_experience = 10
+	}
+	option = {
+		name = gdr.2.c
+		ai_chance = { base = 1 }
+		add_stability = 0.02
+	}
+}
+
+country_event = {
+	id = gdr.3
+	title = gdr.3.t
+	desc = gdr.3.d
+	picture = GFX_report_event_generic_read_write
+	is_triggered_only = yes
+	option = {
+		name = gdr.3.a
+		ai_chance = { base = 1 }
+		add_stability = 0.03
+	}
+	option = {
+		name = gdr.3.b
+		ai_chance = { base = 1 }
+		add_political_power = 40
+		add_stability = -0.02
+	}
+}
+
+country_event = {
+	id = gdr.4
+	title = gdr.4.t
+	desc = gdr.4.d
+	picture = GFX_report_event_generic_read_write
+	is_triggered_only = yes
+	option = {
+		name = gdr.4.a
+		ai_chance = { base = 1 }
+		add_political_power = 20
+	}
+	option = {
+		name = gdr.4.b
+		ai_chance = { base = 1 }
+		army_experience = 10
+		add_war_support = 0.02
+	}
+}
+
+country_event = {
+	id = gdr.5
+	title = gdr.5.t
+	desc = gdr.5.d
+	picture = GFX_report_event_generic_read_write
+	is_triggered_only = yes
+	option = {
+		name = gdr.5.a
+		ai_chance = { base = 1 }
+		add_political_power = 50
+	}
+	option = {
+		name = gdr.5.b
+		ai_chance = { base = 1 }
+		add_stability = 0.03
+	}
+}
+
+country_event = {
+	id = gdr.6
+	title = gdr.6.t
+	desc = gdr.6.d
+	picture = GFX_report_event_generic_read_write
+	is_triggered_only = yes
+	option = {
+		name = gdr.6.a
+		ai_chance = { base = 1 }
+		add_war_support = 0.03
+	}
+}
+
+country_event = {
+	id = gdr.7
+	title = gdr.7.t
+	desc = gdr.7.d
+	picture = GFX_report_event_generic_read_write
+	is_triggered_only = yes
+	option = {
+		name = gdr.7.a
+		ai_chance = { base = 1 }
+		add_political_power = 50
+		add_stability = 0.02
+	}
+}
+
+country_event = {
+	id = gdr.8
+	title = gdr.8.t
+	desc = gdr.8.d
+	picture = GFX_report_event_generic_read_write
+	is_triggered_only = yes
+	option = {
+		name = gdr.8.a
+		ai_chance = { base = 1 }
+		add_political_power = 30
+		army_experience = 10
+	}
+}
+
+country_event = {
+	id = gdr.9
+	title = gdr.9.t
+	desc = gdr.9.d
+	picture = GFX_report_event_generic_read_write
+	is_triggered_only = yes
+	option = {
+		name = gdr.9.a
+		ai_chance = { base = 1 }
+		add_political_power = 100
+		add_stability = 0.05
+	}
+}
+
+country_event = {
+	id = gdr.10
+	title = gdr.10.t
+	desc = gdr.10.d
+	picture = GFX_report_event_generic_read_write
+	trigger = {
+		original_tag = LUX
+		has_country_flag = GDR_started
+		NOT = { has_country_flag = GDR_path_complete }
+	}
+	mean_time_to_happen = { months = 30 }
+	option = {
+		name = gdr.10.a
+		ai_chance = { base = 1 }
+		add_stability = 0.02
+		add_political_power = -25
+	}
+	option = {
+		name = gdr.10.b
+		ai_chance = { base = 1 }
+		add_stability = -0.03
+		add_political_power = 25
+	}
+}
+
+country_event = {
+	id = gdr.11
+	title = gdr.11.t
+	desc = gdr.11.d
+	picture = GFX_report_event_generic_read_write
+	trigger = {
+		original_tag = LUX
+		has_country_flag = GDR_started
+		has_stability > 0.5
+	}
+	mean_time_to_happen = { months = 30 }
+	option = {
+		name = gdr.11.a
+		ai_chance = { base = 1 }
+		add_stability = 0.02
+		add_war_support = 0.01
+	}
+}

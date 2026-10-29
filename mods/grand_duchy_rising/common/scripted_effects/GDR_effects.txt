@@ -1,0 +1,10 @@
+# Grand Duchy Rising - scripted effects
+GDR_gain_progress = {
+	add_to_variable = { GDR_progress = 1 }
+	set_country_flag = GDR_started
+}
+
+GDR_grant_stability_and_support = {
+	add_stability = 0.02
+	add_war_support = 0.02
+}

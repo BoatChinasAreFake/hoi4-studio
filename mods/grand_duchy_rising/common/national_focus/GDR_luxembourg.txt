@@ -1,0 +1,557 @@
+# Hearts of Iron IV - National Focus Tree
+focus_tree = {
+    id = GDR_luxembourg_focus
+    country = {
+        factor = 0
+        modifier = {
+            add = 1000
+            tag = LUX
+        }
+    }
+    default = no
+
+    focus = {
+        id = GDR_sovereign_ambition
+        icon = GFX_goal_generic_national_unity
+        cost = 5
+        x = 7
+        y = 0
+        completion_reward = {
+            add_political_power = 75
+            add_stability = 0.05
+            GDR_gain_progress = yes
+            country_event = { id = gdr.2 days = 3 }
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_steel_charter
+        icon = GFX_goal_generic_production
+        cost = 5
+        x = 2
+        y = 1
+        prerequisite = { focus = GDR_sovereign_ambition }
+        completion_reward = {
+            add_ideas = GDR_steel_charter_idea
+            GDR_gain_progress = yes
+            country_event = { id = gdr.3 days = 3 }
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_modernize_the_works
+        icon = GFX_goal_generic_construct_civ_factory
+        cost = 5
+        x = 1
+        y = 2
+        prerequisite = { focus = GDR_steel_charter }
+        completion_reward = {
+            capital_scope = { if = { limit = { free_building_slots = { building = industrial_complex size > 0 include_locked = yes } } add_building_construction = { type = industrial_complex level = 1 instant_build = yes } } }
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_rail_nexus
+        icon = GFX_goal_generic_construct_infrastructure
+        cost = 5
+        x = 3
+        y = 2
+        prerequisite = { focus = GDR_steel_charter }
+        completion_reward = {
+            capital_scope = { if = { limit = { NOT = { infrastructure > 4 } } add_building_construction = { type = infrastructure level = 1 instant_build = yes } } }
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_research_college
+        icon = GFX_goal_generic_scientific_exchange
+        cost = 5
+        x = 0
+        y = 3
+        prerequisite = { focus = GDR_modernize_the_works }
+        completion_reward = {
+            add_research_slot = 1
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_ore_to_arms
+        icon = GFX_goal_generic_construct_mil_factory
+        cost = 5
+        x = 2
+        y = 3
+        prerequisite = { focus = GDR_modernize_the_works focus = GDR_rail_nexus }
+        completion_reward = {
+            capital_scope = { if = { limit = { free_building_slots = { building = arms_factory size > 0 include_locked = yes } } add_building_construction = { type = arms_factory level = 1 instant_build = yes } } }
+            add_equipment_to_stockpile = { type = infantry_equipment_1 amount = 300 producer = LUX }
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_cooperatives
+        icon = GFX_goal_generic_consumer_goods
+        cost = 5
+        x = 4
+        y = 3
+        prerequisite = { focus = GDR_rail_nexus }
+        completion_reward = {
+            add_ideas = GDR_cooperatives_idea
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_forge_of_europe
+        icon = GFX_goal_generic_soviet_construction
+        cost = 5
+        x = 2
+        y = 4
+        prerequisite = { focus = GDR_ore_to_arms focus = GDR_research_college focus = GDR_cooperatives }
+        completion_reward = {
+            swap_ideas = { remove_idea = GDR_steel_charter_idea add_idea = GDR_forge_of_europe_idea }
+            add_tech_bonus = { name = GDR_forge_bonus bonus = 0.5 uses = 1 category = industry }
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_guard_the_gap
+        icon = GFX_goal_generic_defence
+        cost = 5
+        x = 7
+        y = 1
+        prerequisite = { focus = GDR_sovereign_ambition }
+        completion_reward = {
+            army_experience = 15
+            GDR_gain_progress = yes
+            country_event = { id = gdr.4 days = 3 }
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_ardennes_line
+        icon = GFX_goal_generic_fortify_city
+        cost = 5
+        x = 6
+        y = 2
+        prerequisite = { focus = GDR_guard_the_gap }
+        completion_reward = {
+            add_ideas = GDR_ardennes_garrisons
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_citizen_reserve
+        icon = GFX_goal_generic_position_armies
+        cost = 5
+        x = 8
+        y = 2
+        prerequisite = { focus = GDR_guard_the_gap }
+        completion_reward = {
+            add_ideas = GDR_citizen_reserve_idea
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_border_garrisons
+        icon = GFX_goal_generic_army_artillery
+        cost = 5
+        x = 6
+        y = 3
+        prerequisite = { focus = GDR_ardennes_line }
+        completion_reward = {
+            add_war_support = 0.05
+            add_equipment_to_stockpile = { type = infantry_equipment_1 amount = 200 producer = LUX }
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_mobile_reserve
+        icon = GFX_goal_generic_army_motorized
+        cost = 5
+        x = 8
+        y = 3
+        prerequisite = { focus = GDR_citizen_reserve }
+        completion_reward = {
+            army_experience = 15
+            add_war_support = 0.03
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_field_manual
+        icon = GFX_goal_generic_army_doctrines
+        cost = 5
+        x = 7
+        y = 4
+        prerequisite = { focus = GDR_border_garrisons focus = GDR_mobile_reserve }
+        completion_reward = {
+            army_experience = 25
+            add_tech_bonus = { name = GDR_field_bonus bonus = 0.5 uses = 1 category = industry }
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_open_ledger
+        icon = GFX_goal_generic_trade
+        cost = 5
+        x = 12
+        y = 1
+        prerequisite = { focus = GDR_sovereign_ambition }
+        completion_reward = {
+            add_political_power = 50
+            GDR_gain_progress = yes
+            country_event = { id = gdr.5 days = 3 }
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_financial_hub
+        icon = GFX_goal_generic_positive_trade_relations
+        cost = 5
+        x = 11
+        y = 2
+        prerequisite = { focus = GDR_open_ledger }
+        completion_reward = {
+            add_ideas = GDR_financial_hub_idea
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_diplomatic_quarter
+        icon = GFX_goal_generic_improve_relations
+        cost = 5
+        x = 13
+        y = 2
+        prerequisite = { focus = GDR_open_ledger }
+        completion_reward = {
+            add_political_power = 75
+            add_stability = 0.03
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_trade_treaties
+        icon = GFX_goal_generic_military_deal
+        cost = 5
+        x = 11
+        y = 3
+        prerequisite = { focus = GDR_financial_hub }
+        completion_reward = {
+            add_stability = 0.03
+            add_political_power = 50
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_national_festival
+        icon = GFX_goal_generic_propaganda
+        cost = 5
+        x = 13
+        y = 3
+        prerequisite = { focus = GDR_diplomatic_quarter }
+        completion_reward = {
+            add_stability = 0.05
+            add_war_support = 0.03
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_international_bank
+        icon = GFX_goal_generic_major_alliance
+        cost = 5
+        x = 12
+        y = 4
+        prerequisite = { focus = GDR_trade_treaties focus = GDR_national_festival }
+        completion_reward = {
+            add_political_power = 100
+            add_research_slot = 1
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_armed_neutrality
+        icon = GFX_goal_generic_neutrality_focus
+        cost = 5
+        x = 4
+        y = 5
+        prerequisite = { focus = GDR_field_manual }
+        mutually_exclusive = { focus = GDR_benelux_pact focus = GDR_western_alignment }
+        completion_reward = {
+            set_country_flag = GDR_path_neutral
+            add_ideas = GDR_armed_neutrality_idea
+            add_stability = 0.05
+            GDR_gain_progress = yes
+            country_event = { id = gdr.6 days = 3 }
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_benelux_pact
+        icon = GFX_goal_generic_alliance
+        cost = 5
+        x = 7
+        y = 5
+        prerequisite = { focus = GDR_field_manual focus = GDR_international_bank }
+        mutually_exclusive = { focus = GDR_armed_neutrality focus = GDR_western_alignment }
+        completion_reward = {
+            set_country_flag = GDR_path_benelux
+            add_ideas = GDR_benelux_idea
+            add_political_power = 75
+            GDR_gain_progress = yes
+            country_event = { id = gdr.7 days = 3 }
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_western_alignment
+        icon = GFX_goal_generic_support_democracy
+        cost = 5
+        x = 10
+        y = 5
+        prerequisite = { focus = GDR_international_bank }
+        mutually_exclusive = { focus = GDR_armed_neutrality focus = GDR_benelux_pact }
+        completion_reward = {
+            set_country_flag = GDR_path_western
+            add_ideas = GDR_western_idea
+            add_war_support = 0.05
+            GDR_gain_progress = yes
+            country_event = { id = gdr.8 days = 3 }
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_total_defense
+        icon = GFX_goal_generic_fortify_city
+        cost = 5
+        x = 4
+        y = 6
+        prerequisite = { focus = GDR_armed_neutrality }
+        completion_reward = {
+            add_ideas = GDR_total_defense_idea
+            army_experience = 25
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_hardened_borders
+        icon = GFX_goal_generic_defence
+        cost = 5
+        x = 3
+        y = 7
+        prerequisite = { focus = GDR_total_defense }
+        completion_reward = {
+            add_war_support = 0.05
+            add_stability = 0.03
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_neutral_arsenal
+        icon = GFX_goal_generic_small_arms
+        cost = 5
+        x = 5
+        y = 7
+        prerequisite = { focus = GDR_total_defense }
+        completion_reward = {
+            add_equipment_to_stockpile = { type = infantry_equipment_1 amount = 600 producer = LUX }
+            add_tech_bonus = { name = GDR_arsenal_bonus bonus = 1.0 uses = 1 category = industry }
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_unbreakable_duchy
+        icon = GFX_goal_generic_major_war
+        cost = 5
+        x = 4
+        y = 8
+        prerequisite = { focus = GDR_hardened_borders focus = GDR_neutral_arsenal }
+        completion_reward = {
+            set_country_flag = GDR_path_complete
+            add_ideas = GDR_unbreakable_idea
+            add_war_support = 0.05
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_customs_union
+        icon = GFX_goal_generic_trade
+        cost = 5
+        x = 7
+        y = 6
+        prerequisite = { focus = GDR_benelux_pact }
+        completion_reward = {
+            add_political_power = 75
+            add_stability = 0.03
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_joint_command
+        icon = GFX_goal_generic_position_armies
+        cost = 5
+        x = 6
+        y = 7
+        prerequisite = { focus = GDR_customs_union }
+        completion_reward = {
+            army_experience = 25
+            add_war_support = 0.03
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_common_market
+        icon = GFX_goal_generic_production2
+        cost = 5
+        x = 8
+        y = 7
+        prerequisite = { focus = GDR_customs_union }
+        completion_reward = {
+            add_ideas = GDR_common_market_idea
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_lowlands_federation
+        icon = GFX_goal_generic_major_alliance
+        cost = 5
+        x = 7
+        y = 8
+        prerequisite = { focus = GDR_joint_command focus = GDR_common_market }
+        completion_reward = {
+            set_country_flag = GDR_path_complete
+            add_ideas = GDR_lowlands_idea
+            add_political_power = 100
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_guarantee_request
+        icon = GFX_goal_generic_political_pressure
+        cost = 5
+        x = 10
+        y = 6
+        prerequisite = { focus = GDR_western_alignment }
+        completion_reward = {
+            add_political_power = 75
+            add_stability = 0.03
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_allied_liaison
+        icon = GFX_goal_generic_intelligence_exchange
+        cost = 5
+        x = 9
+        y = 7
+        prerequisite = { focus = GDR_guarantee_request }
+        completion_reward = {
+            army_experience = 25
+            add_tech_bonus = { name = GDR_liaison_bonus bonus = 0.5 uses = 1 category = industry }
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_lend_lease_prep
+        icon = GFX_goal_generic_allies_build_infantry
+        cost = 5
+        x = 11
+        y = 7
+        prerequisite = { focus = GDR_guarantee_request }
+        completion_reward = {
+            add_equipment_to_stockpile = { type = infantry_equipment_1 amount = 500 producer = LUX }
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_arsenal_of_the_west
+        icon = GFX_goal_generic_production
+        cost = 5
+        x = 10
+        y = 8
+        prerequisite = { focus = GDR_allied_liaison focus = GDR_lend_lease_prep }
+        completion_reward = {
+            set_country_flag = GDR_path_complete
+            add_ideas = GDR_arsenal_west_idea
+            add_research_slot = 1
+            GDR_gain_progress = yes
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+    focus = {
+        id = GDR_grand_duchy_rising
+        icon = GFX_goal_generic_national_unity
+        cost = 10
+        x = 7
+        y = 9
+        prerequisite = { focus = GDR_unbreakable_duchy focus = GDR_lowlands_federation focus = GDR_arsenal_of_the_west }
+        completion_reward = {
+            add_stability = 0.1
+            add_war_support = 0.1
+            add_political_power = 200
+            country_event = { id = gdr.9 days = 3 }
+        }
+        ai_will_do = { factor = 10 }
+    }
+
+}

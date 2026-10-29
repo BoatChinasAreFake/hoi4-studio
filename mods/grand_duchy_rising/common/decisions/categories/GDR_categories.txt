@@ -1,0 +1,5 @@
+GDR_grand_duchy_projects = {
+	icon = generic_industry
+	allowed = { original_tag = LUX }
+	visible = { original_tag = LUX }
+}

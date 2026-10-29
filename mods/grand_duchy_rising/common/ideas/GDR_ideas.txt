@@ -1,0 +1,175 @@
+ideas = {
+	country = {
+		GDR_steel_charter_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_production_bonus
+			modifier = {
+				industrial_capacity_factory = 0.1
+				production_speed_buildings_factor = 0.1
+			}
+		}
+
+		GDR_forge_of_europe_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_production_bonus
+			modifier = {
+				industrial_capacity_factory = 0.15
+				production_speed_buildings_factor = 0.15
+				research_speed_factor = 0.05
+			}
+		}
+
+		GDR_cooperatives_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_production_bonus
+			modifier = {
+				production_factory_efficiency_gain_factor = 0.1
+				consumer_goods_factor = -0.05
+			}
+		}
+
+		GDR_ardennes_garrisons = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_fortification_bonus
+			modifier = {
+				army_core_defence_factor = 0.1
+			}
+		}
+
+		GDR_citizen_reserve_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_manpower_bonus
+			modifier = {
+				conscription_factor = 0.1
+				training_time_factor = -0.1
+			}
+		}
+
+		GDR_financial_hub_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_intel_bonus
+			modifier = {
+				political_power_gain = 0.1
+				stability_factor = 0.05
+			}
+		}
+
+		GDR_armed_neutrality_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_fortification_bonus
+			modifier = {
+				army_core_defence_factor = 0.1
+				justify_war_goal_when_in_war_time = 0.1
+			}
+		}
+
+		GDR_total_defense_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_fortification_bonus
+			modifier = {
+				army_core_defence_factor = 0.1
+				army_defence_factor = 0.05
+			}
+		}
+
+		GDR_unbreakable_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_fortification_bonus
+			modifier = {
+				army_core_defence_factor = 0.15
+				stability_factor = 0.05
+				war_support_factor = 0.1
+			}
+		}
+
+		GDR_benelux_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_intel_bonus
+			modifier = {
+				political_power_gain = 0.1
+				research_speed_factor = 0.05
+			}
+		}
+
+		GDR_common_market_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_production_bonus
+			modifier = {
+				industrial_capacity_factory = 0.1
+				consumer_goods_factor = -0.05
+			}
+		}
+
+		GDR_lowlands_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_intel_bonus
+			modifier = {
+				stability_factor = 0.1
+				political_power_gain = 0.1
+				research_speed_factor = 0.1
+			}
+		}
+
+		GDR_western_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_intel_bonus
+			modifier = {
+				war_support_factor = 0.05
+				experience_gain_army_factor = 0.1
+			}
+		}
+
+		GDR_arsenal_west_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_production_bonus
+			modifier = {
+				industrial_capacity_factory = 0.15
+				production_speed_buildings_factor = 0.1
+			}
+		}
+
+		GDR_savings_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_intel_bonus
+			modifier = {
+				stability_factor = 0.05
+				consumer_goods_factor = -0.03
+			}
+		}
+
+		GDR_drills_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_manpower_bonus
+			modifier = {
+				training_time_factor = -0.15
+			}
+		}
+
+		GDR_mobilized_idea = {
+			allowed = { always = no }
+			removal_cost = -1
+			picture = generic_manpower_bonus
+			modifier = {
+				conscription_factor = 0.15
+				war_support_factor = 0.05
+				stability_factor = -0.03
+			}
+		}
+	}
+}

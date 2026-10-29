@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "mod:build": "tsx tools/modbuilder/build.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
@@ -30,6 +31,7 @@
     "oxlint": "^1.89.0",
     "postcss": "^8.5.32",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "~7.0.2",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"

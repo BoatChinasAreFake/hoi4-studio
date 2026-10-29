@@ -1,0 +1,101 @@
+GDR_grand_duchy_projects = {
+	GDR_expand_steelworks = {
+		icon = generic_industry
+		cost = 60
+		days_re_enable = 120
+		available = {
+			capital_scope = { free_building_slots = { building = industrial_complex size > 0 include_locked = yes } }
+		}
+		complete_effect = {
+			capital_scope = { if = { limit = { free_building_slots = { building = industrial_complex size > 0 include_locked = yes } } add_building_construction = { type = industrial_complex level = 1 instant_build = yes } } }
+			GDR_gain_progress = yes
+		}
+		ai_will_do = { factor = 1 }
+	}
+
+	GDR_extend_railways = {
+		icon = generic_industry
+		cost = 40
+		days_re_enable = 90
+		available = {
+			capital_scope = { NOT = { infrastructure > 4 } }
+		}
+		complete_effect = {
+			capital_scope = { if = { limit = { NOT = { infrastructure > 4 } } add_building_construction = { type = infrastructure level = 1 instant_build = yes } } }
+			GDR_gain_progress = yes
+		}
+		ai_will_do = { factor = 1 }
+	}
+
+	GDR_savings_drive = {
+		icon = generic_industry
+		cost = 35
+		days_re_enable = 150
+		available = {
+			has_stability > 0.4
+		}
+		complete_effect = {
+			add_timed_idea = { idea = GDR_savings_idea days = 120 }
+			GDR_gain_progress = yes
+		}
+		ai_will_do = { factor = 1 }
+	}
+
+	GDR_reserve_drills = {
+		icon = generic_industry
+		cost = 30
+		days_re_enable = 120
+		available = {
+			has_war_support > 0.3
+		}
+		complete_effect = {
+			add_timed_idea = { idea = GDR_drills_idea days = 90 }
+			army_experience = 10
+			GDR_gain_progress = yes
+		}
+		ai_will_do = { factor = 1 }
+	}
+
+	GDR_research_grant = {
+		icon = generic_industry
+		cost = 75
+		days_re_enable = 240
+		available = {
+			check_variable = { GDR_progress > 3 }
+		}
+		complete_effect = {
+			add_tech_bonus = { name = GDR_grant_bonus bonus = 0.5 uses = 1 category = industry }
+			GDR_gain_progress = yes
+		}
+		ai_will_do = { factor = 1 }
+	}
+
+	GDR_diplomatic_gala = {
+		icon = generic_industry
+		cost = 40
+		days_re_enable = 180
+		available = {
+			has_stability > 0.5
+		}
+		complete_effect = {
+			add_stability = 0.03
+			add_war_support = 0.02
+			GDR_gain_progress = yes
+		}
+		ai_will_do = { factor = 1 }
+	}
+
+	GDR_mobilize_reserves = {
+		icon = generic_industry
+		cost = 50
+		days_re_enable = 365
+		available = {
+			has_war = yes
+		}
+		complete_effect = {
+			add_timed_idea = { idea = GDR_mobilized_idea days = 180 }
+			army_experience = 15
+		}
+		ai_will_do = { factor = 1 }
+	}
+}

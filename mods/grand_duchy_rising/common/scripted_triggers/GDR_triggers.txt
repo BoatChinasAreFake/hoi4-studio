@@ -1,0 +1,12 @@
+# Grand Duchy Rising - scripted triggers
+GDR_has_chosen_path = {
+	OR = {
+		has_country_flag = GDR_path_neutral
+		has_country_flag = GDR_path_benelux
+		has_country_flag = GDR_path_western
+	}
+}
+
+GDR_is_luxembourg = {
+	original_tag = LUX
+}

@@ -1,0 +1,15 @@
+on_actions = {
+	on_startup = {
+		effect = {
+			if = {
+				limit = { country_exists = LUX }
+				LUX = {
+					set_variable = { GDR_progress = 0 }
+					recruit_character = GDR_general_marie_thill
+					recruit_character = GDR_general_paul_hoffmann
+					country_event = { id = gdr.1 days = 2 }
+				}
+			}
+		}
+	}
+}
