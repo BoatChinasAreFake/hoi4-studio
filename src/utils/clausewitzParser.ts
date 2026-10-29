@@ -1,61 +1,168 @@
 import type { FocusTree, FocusNodeData, FocusProject } from '../types/focus';
 
+// ---------------------------------------------------------------------------
+// Minimal brace-aware Clausewitz scanner (comment- and string-aware).
+// Replaces regex block matching, which broke on space-indented or nested blocks.
+// ---------------------------------------------------------------------------
+
+interface Entry {
+  key: string;
+  start: number; // index of the key
+  value?: string; // scalar value, when not a block
+  valueStart: number;
+  valueEnd: number; // exclusive end of the scalar value
+  open?: number; // index of '{' for block values
+  close?: number; // index of the matching '}'
+}
+
+function skipTrivia(src: string, i: number, end: number): number {
+  while (i < end) {
+    const c = src[i];
+    if (c === '#') {
+      while (i < end && src[i] !== '\n') i++;
+    } else if (/\s/.test(c)) i++;
+    else break;
+  }
+  return i;
+}
+
+function matchBrace(src: string, open: number, end: number): number {
+  let depth = 0;
+  for (let i = open; i < end; i++) {
+    const c = src[i];
+    if (c === '#') {
+      while (i < end && src[i] !== '\n') i++;
+    } else if (c === '"') {
+      i++;
+      while (i < end && src[i] !== '"') i += src[i] === '\\' ? 2 : 1;
+    } else if (c === '{') depth++;
+    else if (c === '}' && --depth === 0) return i;
+  }
+  return -1;
+}
+
+/** Depth-0 `key = value` / `key = { ... }` entries inside [from, to). */
+function topLevelEntries(src: string, from = 0, to = src.length): Entry[] {
+  const out: Entry[] = [];
+  let i = from;
+  while (i < to) {
+    i = skipTrivia(src, i, to);
+    if (i >= to) break;
+    if (src[i] === '{') {
+      const m = matchBrace(src, i, to);
+      i = m < 0 ? to : m + 1;
+      continue;
+    }
+    if (src[i] === '}') { i++; continue; }
+    const start = i;
+    if (src[i] === '"') {
+      i++;
+      while (i < to && src[i] !== '"') i += src[i] === '\\' ? 2 : 1;
+      i++;
+    } else {
+      while (i < to && !/[\s={}#"]/.test(src[i])) i++;
+    }
+    const key = src.slice(start, i).replace(/^"|"$/g, '');
+    let j = skipTrivia(src, i, to);
+    if (src[j] !== '=') continue; // bare token (list item)
+    j = skipTrivia(src, j + 1, to);
+    if (src[j] === '{') {
+      const close = matchBrace(src, j, to);
+      if (close < 0) break;
+      out.push({ key, start, valueStart: j, valueEnd: close + 1, open: j, close });
+      i = close + 1;
+    } else {
+      const vs = j;
+      if (src[j] === '"') {
+        j++;
+        while (j < to && src[j] !== '"') j += src[j] === '\\' ? 2 : 1;
+        j++;
+      } else {
+        while (j < to && !/[\s{}#]/.test(src[j])) j++;
+      }
+      out.push({ key, start, value: src.slice(vs, j), valueStart: vs, valueEnd: j });
+      i = j;
+    }
+  }
+  return out;
+}
+
+const scalar = (es: Entry[], key: string) => es.find((e) => e.key === key && e.value !== undefined)?.value;
+
+function dedent(body: string): string {
+  const lines = body.replace(/^\s*\n/, '').replace(/\s+$/, '').split('\n');
+  const indents = lines.filter((l) => l.trim()).map((l) => l.match(/^[ \t]*/)![0].length);
+  const min = indents.length ? Math.min(...indents) : 0;
+  return lines.map((l) => l.slice(min)).join('\n').trim();
+}
+
+/** Every `focus = { }` block (at any depth) whose own top-level `id` equals focusId. */
+function findFocusBlocks(src: string, focusId: string): Entry[] {
+  const found: Entry[] = [];
+  const walk = (from: number, to: number) => {
+    for (const e of topLevelEntries(src, from, to)) {
+      if (e.open === undefined) continue;
+      if (e.key === 'focus' && scalar(topLevelEntries(src, e.open + 1, e.close!), 'id') === focusId) found.push(e);
+      else walk(e.open + 1, e.close!);
+    }
+  };
+  walk(0, src.length);
+  return found;
+}
+
+/** Replace (or leave untouched if absent) a depth-0 scalar inside one block. */
+function setScalarInBlock(src: string, block: Entry, key: string, value: string): string {
+  const target = topLevelEntries(src, block.open! + 1, block.close!).find((e) => e.key === key && e.value !== undefined);
+  if (!target) return src;
+  return src.slice(0, target.valueStart) + value + src.slice(target.valueEnd);
+}
+
+function mutateFocus(source: string, focusId: string, key: string, value: string): string {
+  // Apply back-to-front so earlier offsets stay valid.
+  let out = source;
+  for (const b of findFocusBlocks(source, focusId).reverse()) out = setScalarInBlock(out, b, key, value);
+  return out;
+}
+
 export class ClausewitzFocusParser {
   static parse(content: string): FocusTree[] {
     const trees: FocusTree[] = [];
-    const focusTreeRegex = /focus_tree\s*=\s*\{([\s\S]*?)\n\}/g;
-    let treeMatch;
-
-    while ((treeMatch = focusTreeRegex.exec(content)) !== null) {
-      const treeBody = treeMatch[1];
-      const idMatch = treeBody.match(/id\s*=\s*([a-zA-Z0-9_]+)/);
-      const treeId = idMatch ? idMatch[1] : 'unnamed_tree';
-
+    for (const t of topLevelEntries(content)) {
+      if (t.key !== 'focus_tree' || t.open === undefined) continue;
+      const treeEntries = topLevelEntries(content, t.open + 1, t.close!);
+      const treeId = scalar(treeEntries, 'id') ?? 'unnamed_tree';
       const focuses: FocusNodeData[] = [];
-      const focusRegex = /focus\s*=\s*\{([\s\S]*?)\n\t*\}/g;
-      let fMatch;
 
-      while ((fMatch = focusRegex.exec(treeBody)) !== null) {
-        const fBody = fMatch[1];
-        const id = (fBody.match(/id\s*=\s*([a-zA-Z0-9_]+)/) || [])[1] || 'unnamed_focus';
-        const icon = (fBody.match(/icon\s*=\s*([a-zA-Z0-9_]+)/) || [])[1] || 'GFX_goal_generic_political_pressure';
-        const cost = parseFloat((fBody.match(/cost\s*=\s*([0-9.]+)/) || [])[1] || '10');
-        const x = parseInt((fBody.match(/x\s*=\s*(-?[0-9]+)/) || [])[1] || '0', 10);
-        const y = parseInt((fBody.match(/y\s*=\s*(-?[0-9]+)/) || [])[1] || '0', 10);
-        const relative_position_id = (fBody.match(/relative_position_id\s*=\s*([a-zA-Z0-9_]+)/) || [])[1];
+      for (const fe of treeEntries) {
+        if (fe.key !== 'focus' || fe.open === undefined) continue;
+        const f = topLevelEntries(content, fe.open + 1, fe.close!);
+        const block = (key: string) => f.filter((e) => e.key === key && e.open !== undefined);
+        const inner = (e: Entry) => content.slice(e.open! + 1, e.close!);
+        const focusRefs = (e: Entry) =>
+          topLevelEntries(content, e.open! + 1, e.close!).filter((x) => x.key === 'focus' && x.value).map((x) => x.value!);
 
-        // Prerequisites
+        const id = scalar(f, 'id') ?? 'unnamed_focus';
+        const icon = scalar(f, 'icon') ?? 'GFX_goal_generic_political_pressure';
+        const costRaw = parseFloat(scalar(f, 'cost') ?? '');
+        const xRaw = parseInt(scalar(f, 'x') ?? '', 10);
+        const yRaw = parseInt(scalar(f, 'y') ?? '', 10);
+        const relative_position_id = scalar(f, 'relative_position_id');
+
+        // Each prerequisite block is an AND-term; several focuses inside one block are OR'd.
         const prereqs: string[][] = [];
-        const prereqRegex = /prerequisite\s*=\s*\{([\s\S]*?)\}/g;
-        let pMatch;
         let isAnyMode = false;
-        while ((pMatch = prereqRegex.exec(fBody)) !== null) {
-          const group: string[] = [];
-          const focusItemRegex = /focus\s*=\s*([a-zA-Z0-9_]+)/g;
-          let item;
-          while ((item = focusItemRegex.exec(pMatch[1])) !== null) {
-            group.push(item[1]);
-          }
+        for (const pe of block('prerequisite')) {
+          const group = focusRefs(pe);
           if (group.length > 1) isAnyMode = true;
           if (group.length > 0) prereqs.push(group);
         }
 
-        // Mutually exclusive
-        const mutuallyExclusive: string[] = [];
-        const mutRegex = /mutually_exclusive\s*=\s*\{([\s\S]*?)\}/g;
-        let mMatch;
-        while ((mMatch = mutRegex.exec(fBody)) !== null) {
-          const itemRegex = /focus\s*=\s*([a-zA-Z0-9_]+)/g;
-          let item;
-          while ((item = itemRegex.exec(mMatch[1])) !== null) {
-            mutuallyExclusive.push(item[1]);
-          }
-        }
+        const mutuallyExclusive = block('mutually_exclusive').flatMap(focusRefs);
 
-        // Available / bypass / rewards / ai
-        const availableMatch = fBody.match(/available\s*=\s*\{([\s\S]*?)\n\t*\}/);
-        const rewardMatch = fBody.match(/completion_reward\s*=\s*\{([\s\S]*?)\n\t*\}/);
-        const aiMatch = fBody.match(/ai_will_do\s*=\s*\{[\s\S]*?factor\s*=\s*([0-9.]+)/);
+        const availableE = block('available')[0];
+        const rewardE = block('completion_reward')[0];
+        const aiE = block('ai_will_do')[0];
+        const aiFactor = aiE ? parseFloat(scalar(topLevelEntries(content, aiE.open! + 1, aiE.close!), 'factor') ?? '') : NaN;
 
         // Derive symbol from icon or default
         let symbol = '★';
@@ -64,23 +171,23 @@ export class ClausewitzFocusParser {
         else if (icon.includes('navy')) symbol = '⚓';
         else if (icon.includes('air')) symbol = '✈';
 
-        const humanName = id.replace(/^[A-Z0-9]{2,4}_/, '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const humanName = id.replace(/^[A-Z0-9]{2,4}_/, '').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 
         focuses.push({
           id,
           name: humanName,
           symbol,
           icon,
-          cost,
-          x,
-          y,
+          cost: Number.isNaN(costRaw) ? 10 : costRaw,
+          x: Number.isNaN(xRaw) ? 0 : xRaw,
+          y: Number.isNaN(yRaw) ? 0 : yRaw,
           relative_position_id,
           prerequisites: prereqs,
           mutually_exclusive: mutuallyExclusive,
           prereqMode: isAnyMode ? 'any' : 'all',
-          available: availableMatch ? availableMatch[1].trim() : '',
-          reward: rewardMatch ? rewardMatch[1].trim() : 'add_political_power = 100',
-          ai: aiMatch ? parseFloat(aiMatch[1]) : 1,
+          available: availableE ? dedent(inner(availableE)) : '',
+          reward: rewardE ? dedent(inner(rewardE)) : 'add_political_power = 100',
+          ai: Number.isNaN(aiFactor) ? 1 : aiFactor,
           description: '',
           status: 'available',
         });
@@ -88,11 +195,10 @@ export class ClausewitzFocusParser {
 
       trees.push({
         id: treeId,
-        default_tree: /default\s*=\s*yes/.test(treeBody),
+        default_tree: scalar(treeEntries, 'default') === 'yes',
         focuses,
       });
     }
-
     return trees;
   }
 
@@ -309,30 +415,19 @@ Tree Details:
   }
 
   static mutateCoordinates(source: string, focusId: string, newX: number, newY: number): string {
-    const focusBlockRegex = new RegExp(`(focus\\s*=\\s*\\{[\\s\\S]*?id\\s*=\\s*${focusId}[\\s\\S]*?\\n\\t*\\})`, 'g');
-    return source.replace(focusBlockRegex, (block) => {
-      let updated = block.replace(/x\s*=\s*-?[0-9]+/, `x = ${newX}`);
-      updated = updated.replace(/y\s*=\s*-?[0-9]+/, `y = ${newY}`);
-      return updated;
-    });
+    return mutateFocus(mutateFocus(source, focusId, 'x', String(newX)), focusId, 'y', String(newY));
   }
 
   static mutateCost(source: string, focusId: string, newCost: number): string {
-    const focusBlockRegex = new RegExp(`(focus\\s*=\\s*\\{[\\s\\S]*?id\\s*=\\s*${focusId}[\\s\\S]*?\\n\\t*\\})`, 'g');
-    return source.replace(focusBlockRegex, (block) => {
-      return block.replace(/cost\s*=\s*[0-9.]+/, `cost = ${newCost}`);
-    });
+    return mutateFocus(source, focusId, 'cost', String(newCost));
   }
 
   static mutateIcon(source: string, focusId: string, newIcon: string): string {
-    const focusBlockRegex = new RegExp(`(focus\\s*=\\s*\\{[\\s\\S]*?id\\s*=\\s*${focusId}[\\s\\S]*?\\n\\t*\\})`, 'g');
-    return source.replace(focusBlockRegex, (block) => {
-      return block.replace(/icon\s*=\s*[a-zA-Z0-9_]+/, `icon = ${newIcon}`);
-    });
+    return mutateFocus(source, focusId, 'icon', newIcon);
   }
 
   static renameSymbol(source: string, oldId: string, newId: string): string {
-    const regex = new RegExp(`\\b${oldId}\\b`, 'g');
+    const regex = new RegExp(`(?<![A-Za-z0-9_])${oldId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9_])`, 'g');
     return source.replace(regex, newId);
   }
 }

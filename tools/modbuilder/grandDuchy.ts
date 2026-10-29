@@ -360,17 +360,13 @@ const noPortrait = undefined as unknown as CharacterDef['portraits'];
 export const CHARACTERS: CharacterDef[] = [
   { token: 'GDR_general_marie_thill', name: 'Marie Thill', gender: 'female', portraits: noPortrait, corpsCommander: { skill: 3, attack: 2, defense: 4, planning: 3, logistics: 3, traits: [] } },
   { token: 'GDR_general_paul_hoffmann', name: 'Paul Hoffmann', gender: 'male', portraits: noPortrait, corpsCommander: { skill: 2, attack: 3, defense: 2, planning: 2, logistics: 2, traits: [] } },
-  { token: 'GDR_adv_jean_schmit', name: 'Jean Schmit', gender: 'male', portraits: noPortrait, advisor: { slot: 'industrial_concern', ideaToken: 'GDR_adv_jean_schmit', ledger: 'civilian', cost: 100, traits: [], aiWillDo: 1 } },
-  { token: 'GDR_adv_anne_weber', name: 'Anne Weber', gender: 'female', portraits: noPortrait, advisor: { slot: 'political_advisor', ideaToken: 'GDR_adv_anne_weber', ledger: 'civilian', cost: 100, traits: [], aiWillDo: 1 } },
-  { token: 'GDR_adv_marc_kieffer', name: 'Marc Kieffer', gender: 'male', portraits: noPortrait, advisor: { slot: 'high_command', ideaToken: 'GDR_adv_marc_kieffer', ledger: 'army', cost: 100, traits: [], aiWillDo: 1 } },
+  { token: 'GDR_adv_jean_schmit', name: 'Jean Schmit', gender: 'male', portraits: noPortrait, advisor: { allowedTag: 'LUX', slot: 'industrial_concern', ideaToken: 'GDR_adv_jean_schmit', ledger: 'civilian', cost: 100, traits: [], aiWillDo: 1 } },
+  { token: 'GDR_adv_anne_weber', name: 'Anne Weber', gender: 'female', portraits: noPortrait, advisor: { allowedTag: 'LUX', slot: 'political_advisor', ideaToken: 'GDR_adv_anne_weber', ledger: 'civilian', cost: 100, traits: [], aiWillDo: 1 } },
+  { token: 'GDR_adv_marc_kieffer', name: 'Marc Kieffer', gender: 'male', portraits: noPortrait, advisor: { allowedTag: 'LUX', slot: 'high_command', ideaToken: 'GDR_adv_marc_kieffer', ledger: 'army', cost: 100, traits: [], aiWillDo: 1 } },
 ];
 
 function charactersScript(): string {
-  // The suite's generator does not emit an `allowed` gate for advisors; add one so they are Luxembourg-only.
-  // It also emits `ai_will_do = { base = n }`; the engine's advisor syntax is `factor`.
-  return generateCharacterScript(CHARACTERS)
-    .replace(/(\t\tadvisor = \{\n)/g, '$1\t\t\tallowed = { original_tag = LUX }\n')
-    .replace(/ai_will_do = \{ base = ([\d.]+) \}/g, 'ai_will_do = { factor = $1 }') + '\n';
+  return generateCharacterScript(CHARACTERS) + '\n';
 }
 
 // ---------------------------------------------------------------------------
@@ -534,7 +530,7 @@ const ON_ACTIONS = `on_actions = {
 // Localisation
 // ---------------------------------------------------------------------------
 
-function esc(s: string) { return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r?\n/g, '\\n'); }
+function esc(s: string) { return s.replace(/\r?\n/g, '\\n'); }
 
 function locEntries(): LocEntry[] {
   const out: LocEntry[] = [];

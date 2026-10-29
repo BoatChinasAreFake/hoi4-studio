@@ -654,54 +654,51 @@ pub fn compute_province_diff(old_csv: &str, new_csv: &str) -> ProvinceRealignmen
 
 /// Remaps shifted province IDs in mod files (e.g. states, railways, victory points)
 pub fn realign_mod_provinces(script: &str, mapping: &ProvinceRealignmentMap) -> RealignmentResult {
-    let mut modified = script.to_string();
-    let mut count = 0;
-    let mut remapped = Vec::new();
+    // Single pass over whole numeric tokens. Replacing id-by-id would chain shifts
+    // (1 -> 2 then 2 -> 3 turns every original 1 into 3), and copying bytes as chars
+    // would corrupt multibyte UTF-8. Delimiters and digits are ASCII, so byte indices
+    // are always char boundaries and slices are copied verbatim.
+    let bytes = script.as_bytes();
+    let is_prev_delim = |b: u8| b.is_ascii_whitespace() || matches!(b, b'{' | b'=' | b'}' | b'(');
+    let is_next_delim = |b: u8| b.is_ascii_whitespace() || matches!(b, b'}' | b'{' | b'=' | b')');
 
-    // Sort descending by ID length to avoid prefix collisions
-    let mut sorted_provinces: Vec<(&u32, &u32)> = mapping.shifted_provinces.iter().collect();
-    sorted_provinces.sort_by(|a, b| b.0.to_string().len().cmp(&a.0.to_string().len()));
+    let mut out = String::with_capacity(script.len());
+    let mut last = 0usize;
+    let mut i = 0usize;
+    let mut count = 0usize;
+    let mut tally: Vec<(u32, u32, usize)> = Vec::new();
 
-    for (old_id, new_id) in sorted_provinces {
-        let old_str = old_id.to_string();
-        let new_str = new_id.to_string();
-
-        let mut new_result = String::with_capacity(modified.len());
-        let mut i = 0;
-        let bytes = modified.as_bytes();
-        let len = bytes.len();
-        let target_bytes = old_str.as_bytes();
-        let target_len = target_bytes.len();
-        let mut local_count = 0;
-
-        while i < len {
-            if i + target_len <= len && &bytes[i..i + target_len] == target_bytes {
-                let prev_ok = i == 0 || bytes[i - 1].is_ascii_whitespace() || bytes[i - 1] == b'{' || bytes[i - 1] == b'=' || bytes[i - 1] == b'}' || bytes[i - 1] == b'(';
-                let next_idx = i + target_len;
-                let next_ok = next_idx == len || bytes[next_idx].is_ascii_whitespace() || bytes[next_idx] == b'}' || bytes[next_idx] == b'{' || bytes[next_idx] == b'=' || bytes[next_idx] == b')';
-
-                if prev_ok && next_ok {
-                    new_result.push_str(&new_str);
-                    i += target_len;
-                    local_count += 1;
-                    continue;
+    while i < bytes.len() {
+        if bytes[i].is_ascii_digit() && (i == 0 || is_prev_delim(bytes[i - 1])) {
+            let mut j = i;
+            while j < bytes.len() && bytes[j].is_ascii_digit() {
+                j += 1;
+            }
+            if j == bytes.len() || is_next_delim(bytes[j]) {
+                if let Ok(old_id) = script[i..j].parse::<u32>() {
+                    if let Some(new_id) = mapping.shifted_provinces.get(&old_id) {
+                        out.push_str(&script[last..i]);
+                        out.push_str(&new_id.to_string());
+                        last = j;
+                        count += 1;
+                        match tally.iter_mut().find(|t| t.0 == old_id) {
+                            Some(t) => t.2 += 1,
+                            None => tally.push((old_id, *new_id, 1)),
+                        }
+                    }
                 }
             }
-            new_result.push(bytes[i] as char);
+            i = j;
+        } else {
             i += 1;
         }
-
-        if local_count > 0 {
-            count += local_count;
-            remapped.push((*old_id, *new_id));
-            modified = new_result;
-        }
     }
+    out.push_str(&script[last..]);
 
     RealignmentResult {
-        modified_script: modified,
+        modified_script: out,
         replacements_count: count,
-        remapped_ids: remapped,
+        remapped_ids: tally.into_iter().map(|(o, n, _)| (o, n)).collect(),
     }
 }
 
@@ -974,8 +971,23 @@ pub fn validate_mod_descriptor(content: &str) -> DescriptorValidationResult {
             continue;
         }
 
-        if trimmed.starts_with("tags") && trimmed.contains('{') {
-            in_tags = true;
+        if trimmed.starts_with("tags")
+            && trimmed["tags".len()..].trim_start().starts_with('=')
+            && trimmed.contains('{')
+        {
+            // Handles `tags={`, `tags = {` and one-line `tags = { "A" "B" }`.
+            let after = &trimmed[trimmed.find('{').unwrap() + 1..];
+            let (inline, closed) = match after.find('}') {
+                Some(end) => (&after[..end], true),
+                None => (after, false),
+            };
+            for part in inline.split('"').skip(1).step_by(2) {
+                let t = part.trim();
+                if !t.is_empty() {
+                    tags.push(t.to_string());
+                }
+            }
+            in_tags = !closed;
             continue;
         }
 
@@ -1028,6 +1040,52 @@ pub fn validate_mod_descriptor(content: &str) -> DescriptorValidationResult {
     }
 }
 
+/// Path-aware ignore matching (mirrors `matchesIgnoreRule` in phase5Generators.ts):
+/// `*` globs, `dir/` rules, dot rules (extension or dot-prefixed name) and plain names.
+/// Substring matching used to drop unrelated files (e.g. `latests/`) and ignored globs entirely.
+pub fn matches_ignore_rule(path: &str, rule: &str) -> bool {
+    let p = path.replace('\\', "/");
+    let p = p.trim_start_matches("./");
+    let r = rule.trim().replace('\\', "/");
+    if r.is_empty() {
+        return false;
+    }
+    let segments: Vec<&str> = p.split('/').collect();
+    let base = segments.last().copied().unwrap_or("");
+    if r.contains('*') {
+        let glob_match = |text: &str| -> bool {
+            let parts: Vec<&str> = r.split('*').collect();
+            let mut pos = 0usize;
+            for (i, part) in parts.iter().enumerate() {
+                if part.is_empty() {
+                    continue;
+                }
+                if i == 0 {
+                    if !text.starts_with(part) {
+                        return false;
+                    }
+                    pos = part.len();
+                } else if i == parts.len() - 1 {
+                    return text.len() >= pos + part.len() && text.ends_with(part);
+                } else if let Some(f) = text[pos..].find(part) {
+                    pos += f + part.len();
+                } else {
+                    return false;
+                }
+            }
+            true
+        };
+        return if r.contains('/') { glob_match(p) } else { segments.iter().any(|s| glob_match(s)) };
+    }
+    if r.ends_with('/') {
+        return p.starts_with(&r) || p.contains(&format!("/{}", r));
+    }
+    if r.starts_with('.') {
+        return base.ends_with(&r) || segments.iter().any(|s| s.starts_with(&r));
+    }
+    p == r || segments.contains(&r.as_str()) || p.starts_with(&format!("{}/", r))
+}
+
 /// Filters development files (.git, .agents, .psd, .blend, .wav, test files) and produces release manifest
 pub fn package_workshop_release(
     files: &[ModAssetEntry],
@@ -1049,21 +1107,10 @@ pub fn package_workshop_release(
     ];
 
     for file in files {
-        let mut should_ignore = false;
-        for ign in default_ignores {
-            if file.path.contains(ign) {
-                should_ignore = true;
-                break;
-            }
-        }
-        if !should_ignore {
-            for custom_ign in ignore_patterns {
-                if !custom_ign.is_empty() && file.path.contains(custom_ign) {
-                    should_ignore = true;
-                    break;
-                }
-            }
-        }
+        let should_ignore = default_ignores.iter().any(|r| matches_ignore_rule(&file.path, r))
+            || ignore_patterns
+                .iter()
+                .any(|r| !r.is_empty() && matches_ignore_rule(&file.path, r));
 
         if should_ignore {
             excluded_count += 1;
@@ -1260,5 +1307,34 @@ mod tests {
         let d = res.descriptor.unwrap();
         assert_eq!(d.name, "Republic Mod");
         assert_eq!(d.tags.len(), 2);
+    }
+
+    #[test]
+    fn test_realign_does_not_chain_and_keeps_utf8() {
+        let mut shifted = HashMap::new();
+        shifted.insert(1u32, 2u32);
+        shifted.insert(2u32, 3u32);
+        let map = ProvinceRealignmentMap {
+            shifted_provinces: shifted,
+            split_provinces: HashMap::new(),
+            added_provinces: vec![],
+            removed_provinces: vec![],
+        };
+        let res = realign_mod_provinces("name = \"Köln\" provinces = { 1 2 } x = 0.1", &map);
+        assert_eq!(res.modified_script, "name = \"Köln\" provinces = { 2 3 } x = 0.1");
+        assert_eq!(res.replacements_count, 2);
+    }
+
+    #[test]
+    fn test_package_filter_is_path_aware() {
+        assert!(!matches_ignore_rule("common/latests/a.txt", "tests/"));
+        assert!(matches_ignore_rule("art/a.psd", "*.psd"));
+        assert!(matches_ignore_rule(".github/x", ".git"));
+    }
+
+    #[test]
+    fn test_descriptor_inline_tags_do_not_swallow_following_fields() {
+        let r = validate_mod_descriptor("tags={ \"Gameplay\" }\nname=\"X\"\nsupported_version=\"1.*\"\n");
+        assert!(r.valid, "{:?}", r.errors);
     }
 }

@@ -85,6 +85,7 @@ export function generateSuperEventFiles(def: SuperEventDef): Record<string, stri
   const scriptedGui = `scripted_gui = {
     ${prefix}_window = {
         context_type = player_context
+        window_name = "${prefix}_window"
         parent_window_token = top_bar
         visible = {
             has_global_flag = ${prefix}_active
@@ -99,7 +100,8 @@ export function generateSuperEventFiles(def: SuperEventDef): Record<string, stri
 `;
 
   // 3. sound/superevents_<name>.asset
-  const asset = `sound = {
+  const asset = `# NOTE: the audio file below is NOT generated; supply sound/superevents/${cleanId}.ogg yourself.
+sound = {
     name = "${def.soundEffect || `${prefix}_sound`}"
     file = "superevents/${cleanId}.ogg"
     volume = 1.0
@@ -278,7 +280,8 @@ export function scaffoldCountryFiles(config: CountryWizardConfig): CountryWizard
   // 3. history/countries/<tag> - <name>.txt
   const leaderId = `${tag}_${leaderName.replace(/\s+/g, '_').toLowerCase()}`;
   const countryHistory = [
-    `capital = ${capitalProvinceId}`,
+    // `capital` takes a STATE id, not a province id.
+    `capital = ${stateId}`,
     `set_research_slots = 3`,
     `set_convoys = 10`,
     `set_politics = {`,
@@ -473,6 +476,7 @@ export function generateCharacterScript(characters: CharacterDef[]): string {
     // Role: advisor
     if (char.advisor) {
       lines.push(`\t\tadvisor = {`);
+      if (char.advisor.allowedTag) lines.push(`\t\t\tallowed = { original_tag = ${char.advisor.allowedTag} }`);
       lines.push(`\t\t\tslot = ${char.advisor.slot}`);
       if (char.advisor.ideaToken) lines.push(`\t\t\tidea_token = ${char.advisor.ideaToken}`);
       if (char.advisor.ledger) lines.push(`\t\t\tledger = ${char.advisor.ledger}`);
@@ -481,7 +485,7 @@ export function generateCharacterScript(characters: CharacterDef[]): string {
         lines.push(`\t\t\ttraits = { ${char.advisor.traits.join(' ')} }`);
       }
       if (char.advisor.aiWillDo !== undefined) {
-        lines.push(`\t\t\tai_will_do = { base = ${char.advisor.aiWillDo.toFixed(1)} }`);
+        lines.push(`\t\t\tai_will_do = { factor = ${char.advisor.aiWillDo.toFixed(1)} }`);
       }
       lines.push(`\t\t}`);
     }

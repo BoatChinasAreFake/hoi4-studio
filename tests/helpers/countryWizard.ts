@@ -57,7 +57,7 @@ export function scaffoldCountryFiles(config: CountryWizardConfig): CountryWizard
 
   // 3. history/countries/<tag> - <name>.txt
   const countryHistory = [
-    `capital = ${capitalProvinceId}`,
+    `capital = ${stateId}`,
     `set_research_slots = 3`,
     `set_convoys = 10`,
     `set_politics = {`,

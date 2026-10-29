@@ -595,28 +595,22 @@ export function realignModProvinces(
   script: string,
   shiftedMap: Map<number, number>
 ): RealignmentReport {
-  let modifiedScript = script;
   let replacementsCount = 0;
   const remappedProvinces: Array<{ oldId: number; newId: number; occurrences: number }> = [];
 
-  // Sort descending by numeric ID length to guarantee longest match priority
-  const sortedEntries = Array.from(shiftedMap.entries()).sort(
-    (a, b) => b[0].toString().length - a[0].toString().length
-  );
-
-  for (const [oldId, newId] of sortedEntries) {
-    const regex = new RegExp(`\\b${oldId}\\b`, 'g');
-    let occurrences = 0;
-
-    modifiedScript = modifiedScript.replace(regex, () => {
-      occurrences++;
-      replacementsCount++;
-      return newId.toString();
-    });
-
-    if (occurrences > 0) {
-      remappedProvinces.push({ oldId, newId, occurrences });
-    }
+  // Single pass over whole numeric tokens: replacing id-by-id chains shifts
+  // (1 -> 2 then 2 -> 3 would turn every original 1 into 3).
+  const counts = new Map<number, number>();
+  const modifiedScript = script.replace(/(?<![\w.])\d+(?![\w.])/g, (tok) => {
+    const oldId = Number(tok);
+    const newId = shiftedMap.get(oldId);
+    if (newId === undefined) return tok;
+    counts.set(oldId, (counts.get(oldId) ?? 0) + 1);
+    replacementsCount++;
+    return String(newId);
+  });
+  for (const [oldId, occurrences] of counts) {
+    remappedProvinces.push({ oldId, newId: shiftedMap.get(oldId)!, occurrences });
   }
 
   return {
@@ -1011,7 +1005,7 @@ export function validateModDescriptor(content: string): {
 
   if (!nameMatch) errors.push("Missing mandatory field: 'name'");
   if (!supportedVersionMatch) errors.push("Missing mandatory field: 'supported_version'");
-  if (!content.includes('tags=')) errors.push("Missing mandatory block: 'tags'");
+  if (!/\btags\s*=\s*\{/.test(content)) errors.push("Missing mandatory block: 'tags'");
 
   const tags: string[] = [];
   const tagsBlock = content.match(/\btags\s*=\s*\{([^}]*)\}/);
@@ -1039,6 +1033,26 @@ export function validateModDescriptor(content: string): {
   };
 }
 
+/**
+ * Path-aware ignore matching. Supports `*` globs ("*.psd"), directory rules ("tests/"),
+ * dot rules (".git" also covers ".github"/".gitkeep"; ".psd" is an extension) and plain names.
+ * Plain substring matching used to drop unrelated files (e.g. "latests/") and never honoured globs.
+ */
+export function matchesIgnoreRule(path: string, rule: string): boolean {
+  const p = path.replace(/\\/g, '/').replace(/^\.?\//, '');
+  const r = rule.trim().replace(/\\/g, '/');
+  if (!r) return false;
+  const segments = p.split('/');
+  const base = segments[segments.length - 1];
+  if (r.includes('*')) {
+    const re = new RegExp('^' + r.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*') + '$');
+    return r.includes('/') ? re.test(p) : segments.some((seg) => re.test(seg));
+  }
+  if (r.endsWith('/')) return p.startsWith(r) || p.includes('/' + r);
+  if (r.startsWith('.')) return base.endsWith(r) || segments.some((seg) => seg.startsWith(r));
+  return p === r || segments.includes(r) || p.startsWith(r + '/');
+}
+
 export function filterPackageReleaseFiles(
   files: Array<{ path: string; sizeBytes?: number } | string>,
   customIgnorePatterns: string[] = []
@@ -1064,7 +1078,7 @@ export function filterPackageReleaseFiles(
     const path = typeof item === 'string' ? item : item.path;
     const size = typeof item === 'string' ? 1000 : (item.sizeBytes || 1000);
 
-    const isExcluded = allIgnore.some(rule => path.includes(rule));
+    const isExcluded = allIgnore.some(rule => matchesIgnoreRule(path, rule));
     if (isExcluded) {
       excludedFiles.push(path);
     } else {

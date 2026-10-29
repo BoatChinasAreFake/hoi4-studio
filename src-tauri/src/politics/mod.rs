@@ -204,7 +204,8 @@ pub fn scaffold_country_files(config: CountryScaffoldConfig) -> CountryScaffoldR
     let elections_allowed = if ruling_party == "democratic" { "yes" } else { "no" };
     let country_history = format!(
         "capital = {}\nset_research_slots = 3\nset_convoys = 10\nset_politics = {{\n\truling_party = {}\n\tlast_election = \"1936.1.1\"\n\telection_frequency = 48\n\telections_allowed = {}\n}}\nset_popularities = {{\n\t{} = 100\n}}\nrecruit_character = {}\n",
-        capital_province_id, ruling_party, elections_allowed, ruling_party, leader_id
+        // `capital` takes a STATE id, not a province id.
+        state_id, ruling_party, elections_allowed, ruling_party, leader_id
     );
     files.push(GeneratedFilePayload {
         path: format!("history/countries/{} - {}.txt", tag, name),

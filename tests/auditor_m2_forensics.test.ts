@@ -314,7 +314,7 @@ describe('Forensic Integrity Stress Tests - Milestone M2', () => {
       expect(script).toContain('advisor = {');
       expect(script).toContain('slot = navy_chief');
       expect(script).toContain('decisive_battle_theorist');
-      expect(script).toContain('ai_will_do = { base = 2.0 }');
+      expect(script).toContain('ai_will_do = { factor = 2.0 }');
     });
   });
 });

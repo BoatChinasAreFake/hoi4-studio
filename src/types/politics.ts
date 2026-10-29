@@ -73,6 +73,8 @@ export interface NavyLeaderRole {
 
 export interface AdvisorRole {
   slot: string;
+  /** Restricts hiring to one country tag (emitted as `allowed = { original_tag = TAG }`). */
+  allowedTag?: string;
   ideaToken?: string;
   ledger?: 'civilian' | 'army' | 'navy' | 'air';
   cost?: number;
