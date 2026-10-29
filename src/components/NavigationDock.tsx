@@ -27,11 +27,11 @@ export const NavigationDock: React.FC<NavigationDockProps> = ({
   onTriggerHotReload,
 }) => {
   const hubs: { id: ActivityHub; label: string; icon: React.ReactNode; shortcut: string }[] = [
-    { id: 'narrative', label: 'Narrative & Content', icon: <BookOpen className="h-5 w-5" />, shortcut: '1' },
-    { id: 'military', label: 'Military & Warfare', icon: <Shield className="h-5 w-5" />, shortcut: '2' },
-    { id: 'map', label: 'World & Map Studio', icon: <Map className="h-5 w-5" />, shortcut: '3' },
-    { id: 'politics', label: 'Politics & Diplomacy', icon: <Landmark className="h-5 w-5" />, shortcut: '4' },
-    { id: 'economy', label: 'Economy & Tech', icon: <Cpu className="h-5 w-5" />, shortcut: '5' },
+    { id: 'map', label: 'World & Map Studio', icon: <Map className="h-5 w-5" />, shortcut: '1' },
+    { id: 'politics', label: 'Politics & Diplomacy', icon: <Landmark className="h-5 w-5" />, shortcut: '2' },
+    { id: 'military', label: 'Military & Warfare', icon: <Shield className="h-5 w-5" />, shortcut: '3' },
+    { id: 'economy', label: 'Economy & Tech', icon: <Cpu className="h-5 w-5" />, shortcut: '4' },
+    { id: 'narrative', label: 'Narrative & Content', icon: <BookOpen className="h-5 w-5" />, shortcut: '5' },
     { id: 'ui', label: 'UI & Media', icon: <Palette className="h-5 w-5" />, shortcut: '6' },
     { id: 'simulation', label: 'Simulation & Tools', icon: <FlaskConical className="h-5 w-5" />, shortcut: '7' },
   ];

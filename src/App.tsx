@@ -16,6 +16,12 @@ import { NavigationDock } from './components/NavigationDock';
 import { CommandPalette } from './components/CommandPalette';
 import { FocusPalette, DEFAULT_TEMPLATES } from './components/FocusPalette';
 import { ExportModal } from './components/ExportModal';
+import { WorkspaceDispatcher } from './components/WorkspaceDispatcher';
+import type { MapStudioTab } from './components/map/WorldMapStudio';
+import type { PoliticsTab } from './components/politics/PoliticsStudio';
+import type { MilitaryTab } from './components/military/MilitaryStudio';
+import type { EconomyTab } from './components/economy/EconomyStudio';
+import type { UiStudioTab, SimulationStudioTab } from './types/ui';
 import type { FocusNodeData, FocusProject, FocusTemplate, ActivityHub } from './types/focus';
 import { loadGoalIconsManifest } from './utils/goalIcons';
 import {
@@ -262,6 +268,13 @@ const computeDefaultRightWidth = (winWidth: number) => {
 
 export function App() {
   const [activeHub, setActiveHub] = useState<ActivityHub>('narrative');
+  const [mapStudioTab, setMapStudioTab] = useState<MapStudioTab>('canvas');
+  const [politicsStudioTab, setPoliticsStudioTab] = useState<PoliticsTab>('characters');
+  const [militaryStudioTab, setMilitaryStudioTab] = useState<MilitaryTab>('chassis');
+  const [economyStudioTab, setEconomyStudioTab] = useState<EconomyTab>('techtree');
+  const [uiStudioTab, setUiStudioTab] = useState<UiStudioTab>('gui_builder');
+  const [simulationStudioTab, setSimulationStudioTab] = useState<SimulationStudioTab>('sandbox');
+  const [narrativeStudioTab, setNarrativeStudioTab] = useState<'focus_tree' | 'super_events'>('focus_tree');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'export' | 'validate' | null>(null);
   const [activeMode, setActiveMode] = useState<'select' | 'connect' | 'exclude'>('select');
@@ -778,10 +791,66 @@ export function App() {
     showNotification('Redo applied');
   }, [future, project]);
 
-  // Keyboard Shortcuts (Ctrl+Z, Delete, Escape)
+  // Keyboard Shortcuts (Hotkeys 1-7, Ctrl+K, Ctrl+Z, Delete, Escape)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (/INPUT|TEXTAREA|SELECT/.test((e.target as HTMLElement)?.tagName)) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (/INPUT|TEXTAREA|SELECT/.test(target.tagName) ||
+          target.isContentEditable ||
+          target.closest?.('.monaco-editor'))
+      ) {
+        return;
+      }
+
+      // Universal Command Palette toggle: Ctrl+K / Cmd+K
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsPaletteOpen((prev) => !prev);
+        return;
+      }
+
+      // Hotkeys 1 through 7 for Hub navigation
+      if (!e.ctrlKey && !e.altKey && !e.metaKey) {
+        switch (e.key) {
+          case '1':
+            e.preventDefault();
+            setActiveHub('map');
+            showNotification('Switched to Hub 1: World & Map Studio');
+            return;
+          case '2':
+            e.preventDefault();
+            setActiveHub('politics');
+            showNotification('Switched to Hub 2: Politics Studio');
+            return;
+          case '3':
+            e.preventDefault();
+            setActiveHub('military');
+            showNotification('Switched to Hub 3: Military Studio');
+            return;
+          case '4':
+            e.preventDefault();
+            setActiveHub('economy');
+            showNotification('Switched to Hub 4: Economy Studio');
+            return;
+          case '5':
+            e.preventDefault();
+            setActiveHub('narrative');
+            showNotification('Switched to Hub 5: Narrative Studio');
+            return;
+          case '6':
+            e.preventDefault();
+            setActiveHub('ui');
+            showNotification('Switched to Hub 6: UI Studio');
+            return;
+          case '7':
+            e.preventDefault();
+            setActiveHub('simulation');
+            showNotification('Switched to Hub 7: Simulation Studio');
+            return;
+        }
+      }
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault();
@@ -876,8 +945,23 @@ export function App() {
         onTriggerHotReload={handleTriggerHotReload}
       />
 
-      {/* 2. Left Resizable & Customizable Focus Palette */}
-      <FocusPalette
+      {/* 2. Dynamic Workspace Dispatcher (Hubs 1-7) */}
+      <WorkspaceDispatcher
+        activeHub={activeHub}
+        focuses={project.nodes}
+        mapInitialTab={mapStudioTab}
+        politicsInitialTab={politicsStudioTab}
+        militaryInitialTab={militaryStudioTab}
+        economyInitialTab={economyStudioTab}
+        uiInitialTab={uiStudioTab}
+        simulationInitialTab={simulationStudioTab}
+        narrativeTab={narrativeStudioTab}
+        onNotify={showNotification}
+        onSelectHub={setActiveHub}
+        narrativeView={
+          <>
+            {/* 2. Left Resizable & Customizable Focus Palette */}
+            <FocusPalette
         project={project}
         width={leftWidth}
         onUpdateProject={(updates) => {
@@ -1276,6 +1360,9 @@ export function App() {
       {isDragging && (
         <div className="fixed inset-0 z-50 cursor-col-resize select-none bg-transparent" />
       )}
+          </>
+        }
+      />
 
       {/* 5. Mod Export & Tree Validation Modals */}
       {modalMode && (
@@ -1294,11 +1381,39 @@ export function App() {
         onClose={() => setIsPaletteOpen(false)}
         onSelectHub={setActiveHub}
         onTriggerHotReload={handleTriggerHotReload}
-        onRunSandbox={() => setIsSandboxMode(true)}
+        onRunSandbox={() => setActiveHub('simulation')}
         onAddFocus={() => handleAddFocus()}
         onResetDefault={handleResetToDefault}
         onOpenExport={() => setModalMode('export')}
         onOpenValidate={() => setModalMode('validate')}
+        onSelectMapTab={(tab) => {
+          setMapStudioTab(tab);
+          setActiveHub('map');
+        }}
+        onSelectPoliticsTab={(tab) => {
+          setPoliticsStudioTab(tab);
+          setActiveHub('politics');
+        }}
+        onSelectMilitaryTab={(tab) => {
+          setMilitaryStudioTab(tab);
+          setActiveHub('military');
+        }}
+        onSelectEconomyTab={(tab) => {
+          setEconomyStudioTab(tab);
+          setActiveHub('economy');
+        }}
+        onSelectNarrativeTab={(tab) => {
+          setNarrativeStudioTab(tab);
+          setActiveHub('narrative');
+        }}
+        onSelectUiTab={(tab) => {
+          setUiStudioTab(tab);
+          setActiveHub('ui');
+        }}
+        onSelectSimulationTab={(tab) => {
+          setSimulationStudioTab(tab);
+          setActiveHub('simulation');
+        }}
       />
     </div>
   );
