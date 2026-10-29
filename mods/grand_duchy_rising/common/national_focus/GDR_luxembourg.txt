@@ -341,7 +341,7 @@ focus_tree = {
 
     focus = {
         id = GDR_western_alignment
-        icon = GFX_goal_generic_support_democracy
+        icon = GFX_goal_support_democracy
         cost = 5
         x = 10
         y = 5

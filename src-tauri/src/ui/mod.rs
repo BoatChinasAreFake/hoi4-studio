@@ -524,31 +524,18 @@ pub fn migrate_deprecated_syntax(script: &str) -> MigrationResult {
     let mut items = Vec::new();
     let mut migrated_lines = Vec::new();
 
-    let migration_patterns = [
-        ("is_in_faction = yes", "Modernize faction check (HOI4 1.11+)", "has_faction = yes"),
-        ("is_in_faction = no", "Modernize faction check (HOI4 1.11+)", "has_faction = no"),
-        ("is_puppet = yes", "Modernize puppet check to is_subject", "is_subject = yes"),
-        ("is_puppet = no", "Modernize puppet check to is_subject", "is_subject = no"),
-        ("can_create_factions = yes", "Modernize faction rule syntax", "rule = { can_create_factions = yes }"),
-    ];
+    // Intentionally empty. The former rules (is_in_faction -> has_faction, is_puppet -> is_subject,
+    // wrapping can_create_factions in `rule = { }`) are wrong for HOI4 1.19.4: `has_faction` does not exist,
+    // `is_in_faction` / `is_puppet` are still valid, and `rules` blocks do not nest `rule`. Add a rule only
+    // once the old token is confirmed absent from the vanilla files. create_country_leader is also still
+    // valid, and commenting out just its opening line would leave an unbalanced `}`, so it is left alone.
+    let migration_patterns: [(&str, &str, &str); 0] = [];
 
     for (idx, line) in script.lines().enumerate() {
         let line_num = idx + 1;
         let mut cur_line = line.to_string();
 
-        // 1. Leader migration pattern
-        if cur_line.contains("create_country_leader") && cur_line.contains('{') {
-            items.push(MigrationItem {
-                rule_id: "RULE_MIGRATE_LEADER".to_string(),
-                description: "Migrated create_country_leader block toward modern character architecture.".to_string(),
-                line_number: line_num,
-                original_text: cur_line.trim().to_string(),
-                migrated_text: format!("# [MIGRATED 1.11+] {}", cur_line.trim()),
-            });
-            cur_line = format!("\t# [MIGRATED] {}", cur_line.trim());
-        }
-
-        // 2. Deprecated syntax replacements
+        // Deprecated syntax replacements
         for (token, desc, rep) in migration_patterns {
             if cur_line.contains(token) && token != rep {
                 items.push(MigrationItem {

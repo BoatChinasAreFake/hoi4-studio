@@ -725,13 +725,12 @@ describe('Adversarial M2: Phase 3 Politics, Country Wizard, BoP & Localization E
       };
 
       const { rulesScript, goalsScript } = generateFactionScript(faction);
-      expect(rulesScript).toContain('leader = GER');
-      expect(rulesScript).toContain('leader_veto_peace_deals = yes');
-      expect(rulesScript).toContain('can_puppet_join = no');
-      expect(rulesScript).toContain('members = { GER ITA JAP HUN ROM }');
+      expect(rulesScript).toContain('type = member_rules');
+      expect(rulesScript).toContain('# Intended members: GER ITA JAP HUN ROM');
 
       expect(goalsScript).toContain('faction_goal_crush_bolshevism = {');
-      expect(goalsScript).toContain('army_core_attack_factor = 0.15');
+      expect(goalsScript).toContain('category = short_term');
+      expect(goalsScript).toContain('army_core_attack_factor = 0.15'); // kept as an intended-reward comment
     });
 
     it('generates valid custom ideologies and sub-ideologies with Paradox rule flags', () => {
@@ -821,10 +820,9 @@ describe('Adversarial M2: Phase 3 Politics, Country Wizard, BoP & Localization E
       expect(diploScript).toContain('create_wargoal');
 
       const timedScript = generateTimedActivityScript(timed);
-      expect(timedScript).toContain('timed_activity_naval_maneuvers = {');
-      expect(timedScript).toContain('duration = 60');
+      expect(timedScript).toContain('naval_maneuvers = {');
+      expect(timedScript).toContain('equipment_need = {');
       expect(timedScript).toContain('fuel = 5000');
-      expect(timedScript).toContain('add_navy_experience = 25');
     });
   });
 });

@@ -315,10 +315,10 @@ pub fn calculate_division_stats(template: &DivisionTemplateDef) -> DivisionCompo
     let total_org: f64 = all_units.iter().map(|u| u.organization).sum();
     let organization = total_org / (all_units.len() as f64);
 
-    // Armor: 30% of highest armor + 70% of average armor
+    // Armor: 40% of highest armor + 60% of average (NMilitary.ARMOR_VS_AVERAGE = 0.4)
     let max_armor = all_units.iter().map(|u| u.armor).fold(0.0, f64::max);
     let avg_armor = all_units.iter().map(|u| u.armor).sum::<f64>() / (all_units.len() as f64);
-    let armor = 0.3 * max_armor + 0.7 * avg_armor;
+    let armor = 0.4 * max_armor + 0.6 * avg_armor;
 
     // Piercing: 40% of highest piercing + 60% of average piercing
     let max_piercing = all_units.iter().map(|u| u.piercing).fold(0.0, f64::max);

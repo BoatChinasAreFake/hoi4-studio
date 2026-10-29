@@ -141,13 +141,13 @@ pub struct ResearchCalculationResult {
 }
 
 pub fn calculate_research_cost(
-    base_cost: f64, // e.g. 2.0 (standard 100 days per 1.0 = 200 base days)
+    base_cost: f64, // e.g. 2.0 (BASE_TECH_COST = 110 days per 1.0 = 220 base days)
     start_year: i32,
     current_year: i32,
     bonus_percent: f64, // e.g. 50.0 for 50% discount
     penalty_per_year: f64, // default 2.0 per ahead year in HOI4
 ) -> ResearchCalculationResult {
-    let base_days = base_cost * 100.0;
+    let base_days = base_cost * 110.0; // NTechnology.BASE_TECH_COST
     let years_ahead = (start_year - current_year).max(0);
     let is_ahead = years_ahead > 0;
 
@@ -158,8 +158,8 @@ pub fn calculate_research_cost(
         1.0
     };
 
-    // Bonus reduces required time: (1 - bonus_percent / 100)
-    let bonus_factor = (1.0 - (bonus_percent / 100.0)).max(0.1);
+    // Bonuses add to research speed (floored at MIN_RESEARCH_SPEED = 0.1): time scales with 1 / speed
+    let bonus_factor = 1.0 / (1.0 + bonus_percent / 100.0).max(0.1);
 
     let final_days = base_days * ahead_penalty_factor * bonus_factor;
 
@@ -167,7 +167,7 @@ pub fn calculate_research_cost(
         base_days,
         ahead_penalty_factor: (ahead_penalty_factor * 100.0).round() / 100.0,
         bonus_factor: (bonus_factor * 100.0).round() / 100.0,
-        final_research_days: (final_days * 10.0).round() / 10.0,
+        final_research_days: (final_days - 1e-9).ceil(), // partial days round up
         is_ahead_of_time: is_ahead,
     }
 }
@@ -292,16 +292,16 @@ mod tests {
 
     #[test]
     fn test_research_cost_calculation_with_ahead_penalty_and_bonus() {
-        // Base cost 2.0 = 200 days, start_year 1940, current_year 1938 -> 2 years ahead
+        // Base cost 2.0 = 220 days (BASE_TECH_COST = 110), start_year 1940, current_year 1938 -> 2 years ahead
         // ahead factor = 1 + 2 * 2.0 = 5.0
-        // bonus 50% = 0.50 factor
-        // final days = 200 * 5.0 * 0.50 = 500 days
+        // bonus 50% adds to speed -> time factor 1 / 1.5
+        // final days = 220 * 5.0 / 1.5 = 733.3 -> 734 days (rounded up)
         let calc = calculate_research_cost(2.0, 1940, 1938, 50.0, 2.0);
         assert!(calc.is_ahead_of_time);
-        assert_eq!(calc.base_days, 200.0);
+        assert_eq!(calc.base_days, 220.0);
         assert_eq!(calc.ahead_penalty_factor, 5.0);
-        assert_eq!(calc.bonus_factor, 0.50);
-        assert_eq!(calc.final_research_days, 500.0);
+        assert_eq!(calc.bonus_factor, 0.67);
+        assert_eq!(calc.final_research_days, 734.0);
     }
 
     #[test]

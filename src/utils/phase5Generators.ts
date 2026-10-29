@@ -313,9 +313,12 @@ export interface ExtractedCountryLeader {
 }
 
 export interface CharacterMigrationResult {
+  /** Input with each create_country_leader replaced by `recruit_character = <id>`. */
   migratedScript: string;
   migratedCount: number;
   extractedLeaders: ExtractedCountryLeader[];
+  /** `characters = { ... }` block to save under common/characters/. Empty when nothing was migrated. */
+  charactersScript: string;
 }
 
 /**
@@ -326,6 +329,7 @@ export function migrateCountryLeaders(
   defaultTag: string = 'MOD'
 ): CharacterMigrationResult {
   const extractedLeaders: ExtractedCountryLeader[] = [];
+  const characterDefs: string[] = [];
   let count = 0;
 
   const leaderBlockRegex = /create_country_leader\s*=\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/g;
@@ -373,25 +377,28 @@ export function migrateCountryLeaders(
       rawBlock: match,
     });
 
-    let modernBlock = `# [MIGRATED TO CHARACTER V1.11+]\ncharacters = {\n\t${charId} = {\n`;
-    modernBlock += `\t\tname = "${name}"\n`;
-    modernBlock += `\t\tportraits = {\n\t\tcivilian = {\n\t\t\tlarge = "${picture}"\n\t\t}\n\t}\n`;
-    modernBlock += `\t\tcountry_leader = {\n`;
-    if (desc) modernBlock += `\t\t\tdesc = "${desc}"\n`;
-    modernBlock += `\t\t\tideology = ${ideology}\n`;
-    modernBlock += `\t\t\texpire = "${expire}"\n`;
+    // The character definition belongs in common/characters, not in the history file: collect it separately.
+    let def = `\t${charId} = {\n`;
+    def += `\t\tname = "${name}"\n`;
+    def += `\t\tportraits = {\n\t\t\tcivilian = {\n\t\t\t\tlarge = "${picture}"\n\t\t\t}\n\t\t}\n`;
+    def += `\t\tcountry_leader = {\n`;
+    if (desc) def += `\t\t\tdesc = "${desc}"\n`;
+    def += `\t\t\tideology = ${ideology}\n`;
+    def += `\t\t\texpire = "${expire}"\n`;
     if (traits.length > 0) {
-      modernBlock += `\t\t\ttraits = { ${traits.join(' ')} }\n`;
+      def += `\t\t\ttraits = { ${traits.join(' ')} }\n`;
     }
-    modernBlock += `\t\t}\n\t}\n}`;
+    def += `\t\t}\n\t}\n`;
+    characterDefs.push(def);
 
-    return modernBlock;
+    return `recruit_character = ${charId}`;
   });
 
   return {
     migratedScript,
     migratedCount: count,
     extractedLeaders,
+    charactersScript: characterDefs.length > 0 ? `characters = {\n${characterDefs.join('')}}\n` : '',
   };
 }
 
@@ -416,42 +423,20 @@ export interface SyntaxMigrationItem {
 
 export interface SyntaxMigrationReport {
   migratedContent: string;
+  /** Character definitions extracted from create_country_leader blocks (save to common/characters/). */
+  charactersScript: string;
   totalMigrations: number;
   items: SyntaxMigrationItem[];
 }
 
-export const SYNTAX_MIGRATION_RULES: DeprecationMigrationRule[] = [
-  {
-    id: 'RULE_IS_IN_FACTION',
-    pattern: /\bis_in_faction\s*=\s*yes\b/g,
-    replacement: 'has_faction = yes',
-    description: 'Modernize faction check: is_in_faction = yes is deprecated in 1.11+, replaced by has_faction = yes',
-  },
-  {
-    id: 'RULE_IS_NOT_IN_FACTION',
-    pattern: /\bis_in_faction\s*=\s*no\b/g,
-    replacement: 'has_faction = no',
-    description: 'Modernize faction check: is_in_faction = no replaced by has_faction = no',
-  },
-  {
-    id: 'RULE_IS_PUPPET',
-    pattern: /\bis_puppet\s*=\s*yes\b/g,
-    replacement: 'is_subject = yes',
-    description: 'Modernize puppet check: is_puppet replaced by is_subject in 1.11+ autonomy system',
-  },
-  {
-    id: 'RULE_CAN_CREATE_FACTIONS',
-    pattern: /\bcan_create_factions\s*=\s*yes\b/g,
-    replacement: 'rule = { can_create_factions = yes }',
-    description: 'Modernize faction creation rule syntax: wrapped in rule block',
-  },
-  {
-    id: 'RULE_HAS_DLC_EXPANSION',
-    pattern: /\bhas_dlc\s*=\s*"Man the Guns"/g,
-    replacement: 'has_dlc = "Man the Guns"',
-    description: 'Standardize DLC token check',
-  },
-];
+/**
+ * Line-level rewrite rules. Intentionally empty: the previous rules (is_in_faction -> has_faction,
+ * is_puppet -> is_subject, wrapping can_create_factions in `rule = { }`) were checked against HOI4 1.19.4
+ * and are wrong: `has_faction` does not exist, `is_in_faction` and `is_puppet` are still valid triggers
+ * (and `is_puppet` is a key in common/autonomous_states), and `rules` blocks do not nest `rule`.
+ * Only add a rule here once the old token is confirmed absent from the vanilla files.
+ */
+export const SYNTAX_MIGRATION_RULES: DeprecationMigrationRule[] = [];
 
 export function migrateDeprecatedScript(
   script: string,
@@ -467,7 +452,7 @@ export function migrateDeprecatedScript(
       description: `Migrated create_country_leader '${leader.name}' to characters block`,
       lineNumber: 1,
       originalText: leader.rawBlock.split('\n')[0] + ' ...',
-      migratedText: `characters = { ... }`,
+      migratedText: `recruit_character = ...`,
     });
   }
 
@@ -497,6 +482,7 @@ export function migrateDeprecatedScript(
 
   return {
     migratedContent: migratedLines.join('\n'),
+    charactersScript: leaderRes.charactersScript,
     totalMigrations: items.length,
     items,
   };
@@ -598,17 +584,31 @@ export function realignModProvinces(
   let replacementsCount = 0;
   const remappedProvinces: Array<{ oldId: number; newId: number; occurrences: number }> = [];
 
-  // Single pass over whole numeric tokens: replacing id-by-id chains shifts
-  // (1 -> 2 then 2 -> 3 would turn every original 1 into 3).
+  // Single pass: replacing id-by-id chains shifts (1 -> 2 then 2 -> 3 would turn every original 1 into 3).
+  // Only numbers in province positions are touched, never values such as `id = 100`, manpower or building levels:
+  //   provinces = { ... }, the first number of victory_points = { <prov> <value> },
+  //   `<prov> = {` building keys, and `province = <prov>` / `*_province = <prov>`.
   const counts = new Map<number, number>();
-  const modifiedScript = script.replace(/(?<![\w.])\d+(?![\w.])/g, (tok) => {
+  const remap = (tok: string): string => {
     const oldId = Number(tok);
     const newId = shiftedMap.get(oldId);
     if (newId === undefined) return tok;
     counts.set(oldId, (counts.get(oldId) ?? 0) + 1);
     replacementsCount++;
     return String(newId);
-  });
+  };
+  const num = /(?<![\w.])\d+(?![\w.])/g;
+  const provincePositions =
+    /(\bprovinces\s*=\s*\{)([^{}]*)(\})|(\bvictory_points\s*=\s*\{\s*)(\d+)(?![\w.])|(?<![\w.])(\d+)(?![\w.])(?=\s*=\s*\{)|(\b(?:\w+_)?province\s*=\s*)(\d+)(?![\w.])/g;
+  const modifiedScript = script.replace(
+    provincePositions,
+    (m, pOpen, pBody, pClose, vOpen, vId, keyId, rOpen, rId) => {
+      if (pOpen !== undefined) return pOpen + pBody.replace(num, remap) + pClose;
+      if (vOpen !== undefined) return vOpen + remap(vId);
+      if (keyId !== undefined) return remap(keyId) + m.slice(keyId.length);
+      return rOpen + remap(rId);
+    }
+  );
   for (const [oldId, occurrences] of counts) {
     remappedProvinces.push({ oldId, newId: shiftedMap.get(oldId)!, occurrences });
   }

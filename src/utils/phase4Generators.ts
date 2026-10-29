@@ -119,12 +119,16 @@ export function calculateResearchCost(
   bonusPercent: number,
   penaltyPerYear: number = 2.0
 ) {
-  const baseDays = baseCost * 100;
+  // common/defines/00_defines.lua NTechnology: BASE_TECH_COST = 110, BASE_YEAR_AHEAD_PENALTY_FACTOR = 2,
+  // MIN_RESEARCH_SPEED = 0.1. Focus `ahead_reduction` lowers the per-year penalty (pass it via penaltyPerYear).
+  const baseDays = baseCost * 110;
   const yearsAhead = Math.max(0, startYear - currentYear);
   const isAheadOfTime = yearsAhead > 0;
   const aheadPenaltyFactor = isAheadOfTime ? 1.0 + yearsAhead * penaltyPerYear : 1.0;
-  const bonusFactor = Math.max(0.1, 1.0 - bonusPercent / 100.0);
-  const finalResearchDays = Math.round(baseDays * aheadPenaltyFactor * bonusFactor);
+  // Research speed bonuses add to the speed multiplier, so time scales with 1 / (1 + bonus).
+  const bonusFactor = 1.0 / Math.max(0.1, 1.0 + bonusPercent / 100.0);
+  // The game rounds partial days up (110 days at +15% speed -> 96); the epsilon absorbs float noise.
+  const finalResearchDays = Math.ceil(baseDays * aheadPenaltyFactor * bonusFactor - 1e-9);
 
   return {
     baseDays,
@@ -329,7 +333,7 @@ export function calculateDivisionStats(template: DivisionTemplateState): Divisio
 
   const maxArmor = Math.max(...allUnits.map((u) => u.armor), 0);
   const avgArmor = allUnits.reduce((sum, u) => sum + u.armor, 0) / allUnits.length;
-  const armor = 0.3 * maxArmor + 0.7 * avgArmor;
+  const armor = 0.4 * maxArmor + 0.6 * avgArmor; // NMilitary.ARMOR_VS_AVERAGE = 0.4
 
   const maxPiercing = Math.max(...allUnits.map((u) => u.piercing), 0);
   const avgPiercing = allUnits.reduce((sum, u) => sum + u.piercing, 0) / allUnits.length;

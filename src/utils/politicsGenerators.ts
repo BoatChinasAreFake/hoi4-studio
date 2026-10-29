@@ -107,10 +107,21 @@ export function generateSuperEventFiles(def: SuperEventDef): Record<string, stri
 `;
 
   // 3. sound/superevents_<name>.asset
+  // Vanilla pairs a `sound` (the file) with a `soundeffect` (what scripts play); see sound/*.asset.
+  const soundName = def.soundEffect || `${prefix}_sound`;
   const asset = `# NOTE: the audio file below is NOT generated; supply sound/superevents/${cleanId}.ogg yourself.
 sound = {
-    name = "${def.soundEffect || `${prefix}_sound`}"
+    name = "${soundName}"
     file = "superevents/${cleanId}.ogg"
+}
+
+soundeffect = {
+    name = "${soundName}"
+    sounds = {
+        sound = "${soundName}"
+    }
+    falloff = "falloff_100"
+    is3d = no
     volume = 1.0
 }
 `;
@@ -130,7 +141,7 @@ country_event = {
 
     immediate = {
         set_global_flag = ${prefix}_active
-        play_sound = "${def.soundEffect || `${prefix}_sound`}"
+        sound_effect = ${def.soundEffect || `${prefix}_sound`}
     }
 
     option = {
@@ -645,38 +656,40 @@ export function getActiveBopModifiers(
 // ==========================================
 
 export function generateFactionScript(faction: FactionDef): { rulesScript: string; goalsScript: string } {
+  // Schema follows common/factions/rules/*.txt (`type = member_rules`, `trigger`) and
+  // common/factions/_documentation.md (faction goals). The vanilla files have no keys for veto,
+  // tension thresholds or member lists, so those settings are kept as comments instead of invented keys.
+  const slug = faction.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  const r = faction.rules;
   const rulesLines = [
-    `# Faction Rules for ${faction.name}`,
-    UNVERIFIED_SYNTAX_NOTE('the faction rule/goal files', 'low'),
-    '# WARNING: field names below (leader_veto_peace_deals, world_tension_threshold, members, ...) are NOT known vanilla keys.',
-    `faction_rule_${faction.name.toLowerCase().replace(/\s+/g, '_')} = {`,
-    `\tname = "${faction.name}"`,
-    `\tleader = ${faction.leaderTag}`,
-    `\tideology = ${faction.ideology}`,
-    `\tleader_veto_peace_deals = ${faction.rules.leaderVetoPeace ? 'yes' : 'no'}`,
-    `\tcan_puppet_join = ${faction.rules.canPuppetJoin ? 'yes' : 'no'}`,
-    `\tworld_tension_threshold = ${faction.rules.worldTensionThreshold.toFixed(2)}`,
-    `\toffensive_war_allowed = ${faction.rules.offensiveWarAllowed ? 'yes' : 'no'}`,
-    `\tmutual_defense_trigger = ${faction.rules.mutualDefenseTrigger ? 'yes' : 'no'}`,
-    `\tmembers = { ${faction.memberTags.join(' ')} }`,
+    `# Faction rule for ${faction.name}`,
+    UNVERIFIED_SYNTAX_NOTE('common/factions/rules/', 'medium'),
+    `# Not expressible as vanilla keys (set via the matching rule types if needed): leader veto peace = ${r.leaderVetoPeace}, puppets may join = ${r.canPuppetJoin}, tension threshold = ${r.worldTensionThreshold}, offensive wars = ${r.offensiveWarAllowed}, mutual defence = ${r.mutualDefenseTrigger}`,
+    `# Intended members: ${faction.memberTags.join(' ')}`,
+    `${slug}_leader_only = {`,
+    `\ttype = member_rules`,
+    `\ttrigger = {`,
+    `\t\tis_faction_leader = yes`,
+    `\t}`,
     `}`,
   ];
 
   const goalLines = [
     `# Faction Goals for ${faction.name}`,
-    UNVERIFIED_SYNTAX_NOTE('the faction rule/goal files', 'low'),
+    UNVERIFIED_SYNTAX_NOTE('common/factions/goals/', 'medium'),
   ];
   for (const g of faction.goals) {
     goalLines.push(`faction_goal_${g.id} = {`);
-    goalLines.push(`\tname = "${g.name}"`);
-    goalLines.push(`\tdescription = "${g.description}"`);
+    goalLines.push(`\t# Define these localisation keys: ${g.id}_goal_name = "${g.name}", ${g.id}_goal_desc = "${g.description}"`);
+    goalLines.push(`\tname = ${g.id}_goal_name`);
+    goalLines.push(`\tdescription = ${g.id}_goal_desc`);
+    goalLines.push(`\tcategory = short_term`);
+    goalLines.push(`\tvisible = { always = yes }`);
+    goalLines.push(`\tcompleted = { always = no }`);
     if (Object.keys(g.rewardModifier).length > 0) {
-      goalLines.push(`\treward_modifier = {`);
-      for (const [k, v] of Object.entries(g.rewardModifier)) {
-        goalLines.push(`\t\t${k} = ${v}`);
-      }
-      goalLines.push(`\t}`);
+      goalLines.push(`\t# Intended reward (apply via complete_effect): ${Object.entries(g.rewardModifier).map(([k, v]) => `${k} = ${v}`).join(', ')}`);
     }
+    goalLines.push(`\tcomplete_effect = { }`);
     goalLines.push(`}`);
   }
 
@@ -774,57 +787,55 @@ export function generateDiploActionScript(action: ScriptedDiploAction): string {
   // and has a `selectable` trigger. UNVERIFIED, low-to-medium confidence.
   return `# Scripted Diplomatic Action: ${action.name}
 ${UNVERIFIED_SYNTAX_NOTE('common/scripted_diplomatic_actions/', 'low')}
-${action.id} = {
-    allowed = {
-        ${action.allowedTrigger || 'always = yes'}
-    }
-    visible = {
-        ${action.visibleTrigger || 'always = yes'}
-    }
-    selectable = {
-        always = yes
-    }
-    requires_acceptance = ${action.requiresAcceptance ? 'yes' : 'no'}
-    cost = ${action.costPP}
-    command_power = ${action.costCP}
-
-    ai_acceptance = {
-        ${action.id}_acceptance = {
-            ${action.aiAcceptanceFormula || 'base = 50'}
+scripted_diplomatic_actions = {
+    ${action.id} = {
+        allowed = {
+            ${action.allowedTrigger || 'always = yes'}
         }
-    }
+        visible = {
+            ${action.visibleTrigger || 'always = yes'}
+        }
+        selectable = {
+            always = yes
+        }
+        requires_acceptance = ${action.requiresAcceptance ? 'yes' : 'no'}
+        cost = ${action.costPP}
+        command_power = ${action.costCP}
 
-    on_sent_effect = {
-        ${action.onSentEffect || ''}
-    }
-    complete_effect = {
-        ${action.completeEffect || ''}
-    }
-    reject_effect = {
-        ${action.rejectEffect || ''}
+        ai_acceptance = {
+            ${action.id}_acceptance = {
+                ${action.aiAcceptanceFormula || 'base = 50'}
+            }
+        }
+
+        on_sent_effect = {
+            ${action.onSentEffect || ''}
+        }
+        complete_effect = {
+            ${action.completeEffect || ''}
+        }
+        reject_effect = {
+            ${action.rejectEffect || ''}
+        }
     }
 }
 `;
 }
 
 export function generateTimedActivityScript(act: TimedActivity): string {
+  // Vanilla common/timed_activities/00_stage_coup.txt only defines `equipment_need = { <equipment> = <amount> }`.
+  // Duration and expiry effects are not part of the schema, so they are kept as comments.
   const costLines = Object.entries(act.equipmentCost)
-    .map(([k, v]) => `${k} = ${v}`)
-    .join(' ');
+    .map(([k, v]) => `\t\t${k} = ${v}`)
+    .join('\n');
 
   return `# Timed National Activity: ${act.name}
-${UNVERIFIED_SYNTAX_NOTE('common/timed_activities/', 'low')}
-# WARNING: I could not recall this schema; the block below is a placeholder, not known vanilla syntax.
-timed_activity_${act.id} = {
-    name = "${act.name}"
-    duration = ${act.durationDays}
-    equipment_cost = { ${costLines} }
-    cancel_trigger = {
-        ${act.cancelTrigger || 'always = no'}
-    }
-    on_expire = {
-        ${act.onExpireEffect || ''}
-    }
+# Vanilla only supports equipment_need here. Not expressible: duration = ${act.durationDays} days, cancel trigger, on-expire effect.
+${UNVERIFIED_SYNTAX_NOTE('common/timed_activities/', 'medium')}
+${act.id} = {
+\tequipment_need = {
+${costLines}
+\t}
 }
 `;
 }

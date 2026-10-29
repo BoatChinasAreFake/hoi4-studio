@@ -264,7 +264,7 @@ describe('Milestone M4 Recheck: Adversarial Stress Suite', () => {
   // Challenge 4: Trigger Migration Rules
   // ==========================================================================
   describe('Challenge 4: Trigger Migration Rules', () => {
-    it('modernizes all deprecated trigger patterns cleanly', () => {
+    it('does not rewrite triggers that are still valid in HOI4 1.19.4', () => {
       const deprecatedScript = `
         limit = {
           is_in_faction = yes
@@ -278,19 +278,11 @@ describe('Milestone M4 Recheck: Adversarial Stress Suite', () => {
 
       const report = migrateDeprecatedScript(deprecatedScript);
 
-      expect(report.totalMigrations).toBe(4);
-
-      // Verifications of modernized replacements
-      expect(report.migratedContent).toContain('has_faction = yes');
-      expect(report.migratedContent).toContain('has_faction = no');
-      expect(report.migratedContent).toContain('is_subject = yes');
-      expect(report.migratedContent).toContain('rule = { can_create_factions = yes }');
-
-      // Verifications that old deprecated syntax is completely gone
-      expect(report.migratedContent).not.toContain('is_in_faction = yes');
-      expect(report.migratedContent).not.toContain('is_in_faction = no');
-      expect(report.migratedContent).not.toContain('is_puppet = yes');
-      expect(report.migratedContent).not.toContain('can_create_factions = yes\n');
+      expect(SYNTAX_MIGRATION_RULES).toHaveLength(0);
+      expect(report.totalMigrations).toBe(0);
+      expect(report.migratedContent).toBe(deprecatedScript);
+      expect(report.migratedContent).not.toContain('has_faction');
+      expect(report.migratedContent).not.toContain('is_subject');
     });
 
     it('simultaneously modernizes legacy leaders and deprecated triggers in one pass', () => {
@@ -310,12 +302,12 @@ describe('Milestone M4 Recheck: Adversarial Stress Suite', () => {
 
       const report = migrateDeprecatedScript(combinedScript, 'FRA');
 
-      expect(report.migratedContent).toContain('characters = {');
-      expect(report.migratedContent).toContain('FRA_philippe_petain = {');
-      expect(report.migratedContent).toContain('has_faction = yes');
+      expect(report.migratedContent).toContain('recruit_character = FRA_philippe_petain');
+      expect(report.migratedContent).not.toContain('characters = {');
       expect(report.migratedContent).not.toContain('create_country_leader = {');
-      expect(report.migratedContent).not.toContain('is_in_faction = yes');
-      expect(report.totalMigrations).toBe(2); // 1 leader + 1 trigger
+      expect(report.migratedContent).toContain('is_in_faction = yes');
+      expect(report.charactersScript).toContain('FRA_philippe_petain = {');
+      expect(report.totalMigrations).toBe(1); // 1 leader, no trigger rewrites
     });
   });
 });

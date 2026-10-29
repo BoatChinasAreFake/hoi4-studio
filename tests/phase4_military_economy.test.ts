@@ -181,24 +181,24 @@ describe('Phase 4: Economy, Tech Trees, Special Projects, Raids & Military Suite
     });
 
     it('calculates research cost with ahead-of-time penalty and national research bonus', () => {
-      // Base cost 2.0 = 200 base days
+      // Base cost 2.0 = 220 base days (BASE_TECH_COST = 110 in common/defines)
       // Start year 1940, simulated current year 1938 -> 2 years ahead
       // Ahead penalty factor = 1 + 2 * 2.0 = 5.0
-      // National research bonus 50% -> bonus factor = 0.50
-      // Expected: 200 * 5.0 * 0.50 = 500 days
+      // National research bonus 50% adds to research speed -> time factor = 1 / 1.5
+      // Expected: 220 * 5.0 / 1.5 = 733.3 -> 734 days (partial days round up)
       const result = calculateResearchCost(2.0, 1940, 1938, 50, 2.0);
       expect(result.isAheadOfTime).toBe(true);
       expect(result.yearsAhead).toBe(2);
-      expect(result.baseDays).toBe(200);
+      expect(result.baseDays).toBe(220);
       expect(result.aheadPenaltyFactor).toBe(5.0);
-      expect(result.bonusFactor).toBe(0.50);
-      expect(result.finalResearchDays).toBe(500);
+      expect(result.bonusFactor).toBeCloseTo(1 / 1.5, 10);
+      expect(result.finalResearchDays).toBe(734);
 
       // On-time research: current year 1940 >= start year 1940
       const onTime = calculateResearchCost(1.5, 1940, 1940, 0, 2.0);
       expect(onTime.isAheadOfTime).toBe(false);
       expect(onTime.aheadPenaltyFactor).toBe(1.0);
-      expect(onTime.finalResearchDays).toBe(150);
+      expect(onTime.finalResearchDays).toBe(165);
     });
   });
 

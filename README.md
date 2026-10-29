@@ -29,7 +29,7 @@ HOI4 Studio organizes mod creation into **7 Activity Hubs**, accessible instantl
 
 ### 3. ⚔️ Military & Warfare (`Hotkey: 3`)
 - **Modular Chassis Designer**: Full visual designer for Tanks (NSB), Aircraft (BBA), and Ships (MtG) with real-time stats, engine/armor sliders, and plane thrust-vs-weight validation.
-- **5×5 Division Template Designer**: Drag-and-drop division grid with regimental support companies, Paradox weighted armor (`0.3*max + 0.7*avg`), piercing (`0.4*max + 0.6*avg`), and speed bottleneck math.
+- **5×5 Division Template Designer**: Drag-and-drop division grid with regimental support companies, Paradox weighted armor (`0.4*max + 0.6*avg`, `ARMOR_VS_AVERAGE`), piercing (`0.4*max + 0.6*avg`), and speed bottleneck math.
 - **Headquarters (HQs) & Command Auras**: Divisional command hierarchy, corps attachment, and commander aura radius configuration.
 - **Doctrines & Special Forces**: Custom land, naval, air, and special forces doctrine trees with mutual exclusion paths and branch prerequisites.
 

@@ -9,6 +9,7 @@ import {
   Link,
   Code,
 } from 'lucide-react';
+import { calculateResearchCost } from '../../utils/phase4Generators';
 
 const GRID_W = 120;
 const GRID_H = 150;
@@ -251,18 +252,13 @@ export const TechTreeCanvas: React.FC<{ onNotify?: (msg: string) => void }> = ({
   // Calculate research time with ahead-of-time penalty & bonus
   const researchCalculation = useMemo(() => {
     if (!selectedNode) return null;
-    const baseDays = selectedNode.researchCost * 100;
-    const yearsAhead = Math.max(0, selectedNode.startYear - simCurrentYear);
-    const aheadPenaltyFactor = yearsAhead > 0 ? 1.0 + yearsAhead * 2.0 : 1.0;
-    const bonusFactor = Math.max(0.1, 1.0 - simResearchBonus / 100.0);
-    const finalDays = Math.round(baseDays * aheadPenaltyFactor * bonusFactor);
-
+    const r = calculateResearchCost(selectedNode.researchCost, selectedNode.startYear, simCurrentYear, simResearchBonus);
     return {
-      baseDays,
-      yearsAhead,
-      aheadPenaltyFactor,
-      bonusFactor,
-      finalDays,
+      baseDays: r.baseDays,
+      yearsAhead: r.yearsAhead,
+      aheadPenaltyFactor: r.aheadPenaltyFactor,
+      bonusFactor: r.bonusFactor,
+      finalDays: r.finalResearchDays,
     };
   }, [selectedNode, simCurrentYear, simResearchBonus]);
 

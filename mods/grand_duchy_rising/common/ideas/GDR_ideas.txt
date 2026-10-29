@@ -34,7 +34,7 @@ ideas = {
 		GDR_ardennes_garrisons = {
 			allowed = { always = no }
 			removal_cost = -1
-			picture = generic_fortification_bonus
+			picture = generic_fortify_the_borders
 			modifier = {
 				army_core_defence_factor = 0.1
 			}
@@ -63,7 +63,7 @@ ideas = {
 		GDR_armed_neutrality_idea = {
 			allowed = { always = no }
 			removal_cost = -1
-			picture = generic_fortification_bonus
+			picture = generic_fortify_the_borders
 			modifier = {
 				army_core_defence_factor = 0.1
 				justify_war_goal_when_in_war_time = 0.1
@@ -73,7 +73,7 @@ ideas = {
 		GDR_total_defense_idea = {
 			allowed = { always = no }
 			removal_cost = -1
-			picture = generic_fortification_bonus
+			picture = generic_fortify_the_borders
 			modifier = {
 				army_core_defence_factor = 0.1
 				army_defence_factor = 0.05
@@ -83,7 +83,7 @@ ideas = {
 		GDR_unbreakable_idea = {
 			allowed = { always = no }
 			removal_cost = -1
-			picture = generic_fortification_bonus
+			picture = generic_fortify_the_borders
 			modifier = {
 				army_core_defence_factor = 0.15
 				stability_factor = 0.05

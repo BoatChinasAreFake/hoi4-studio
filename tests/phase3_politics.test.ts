@@ -357,10 +357,8 @@ describe('Phase 3: Politics, Leadership, Narrative & Modding Suite', () => {
     it('generates valid NCNS faction rules and strategic goals scripts', () => {
       const { rulesScript, goalsScript } = generateFactionScript(faction);
 
-      expect(rulesScript).toContain('leader_veto_peace_deals = yes');
-      expect(rulesScript).toContain('world_tension_threshold = 0.40');
-      expect(rulesScript).toContain('mutual_defense_trigger = yes');
-      expect(rulesScript).toContain('members = { ITA BUL HUN ROM }');
+      expect(rulesScript).toContain('type = member_rules');
+      expect(rulesScript).toContain('# Intended members: ITA BUL HUN ROM');
 
       expect(goalsScript).toContain('faction_goal_balkan_hegemony = {');
       expect(goalsScript).toContain('trade_laws_cost_factor = -0.2');
@@ -468,8 +466,8 @@ describe('Phase 3: Politics, Leadership, Narrative & Modding Suite', () => {
       expect(diploScript).toContain('command_power = 30');
 
       const timedScript = generateTimedActivityScript(timedAct);
-      expect(timedScript).toContain('timed_activity_border_clash_manchuria = {');
-      expect(timedScript).toContain('duration = 90');
+      expect(timedScript).toContain('border_clash_manchuria = {');
+      expect(timedScript).toContain('equipment_need = {');
       expect(timedScript).toContain('infantry_equipment = 1000');
     });
   });

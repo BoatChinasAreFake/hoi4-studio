@@ -240,30 +240,30 @@ fn test_adversarial_research_cost_math_aot_and_bonus_reductions() {
     // Test on-time research (years_ahead = 0)
     let on_time = calculate_research_cost(1.5, 1936, 1938, 0.0, 2.0);
     assert!(!on_time.is_ahead_of_time);
-    assert_eq!(on_time.base_days, 150.0);
+    assert_eq!(on_time.base_days, 165.0);
     assert_eq!(on_time.ahead_penalty_factor, 1.0);
     assert_eq!(on_time.bonus_factor, 1.0);
-    assert_eq!(on_time.final_research_days, 150.0);
+    assert_eq!(on_time.final_research_days, 165.0);
 
     // Test 1 year ahead (penalty = 1 + 1 * 2.0 = 3.0)
     let one_year = calculate_research_cost(2.0, 1939, 1938, 0.0, 2.0);
     assert!(one_year.is_ahead_of_time);
     assert_eq!(one_year.ahead_penalty_factor, 3.0);
-    assert_eq!(one_year.final_research_days, 600.0);
+    assert_eq!(one_year.final_research_days, 660.0);
 
     // Test 3 years ahead with 75% national bonus
-    // base_days = 200, ahead = 1 + 3 * 2 = 7.0, bonus_factor = 1 - 0.75 = 0.25
-    // final = 200 * 7.0 * 0.25 = 350 days
+    // base_days = 220, ahead = 1 + 3 * 2 = 7.0, bonus adds to speed: factor = 1 / 1.75
+    // final = 220 * 7.0 / 1.75 = 880 days
     let three_years = calculate_research_cost(2.0, 1941, 1938, 75.0, 2.0);
     assert!(three_years.is_ahead_of_time);
     assert_eq!(three_years.ahead_penalty_factor, 7.0);
-    assert_eq!(three_years.bonus_factor, 0.25);
-    assert_eq!(three_years.final_research_days, 350.0);
+    assert_eq!(three_years.bonus_factor, 0.57);
+    assert_eq!(three_years.final_research_days, 880.0);
 
-    // Test national bonus clamp: 150% bonus clamp to 0.10 (HOI4 MIN_RESEARCH_SPEED = 0.1)
+    // A 150% bonus is speed 2.5 -> time factor 0.4 (MIN_RESEARCH_SPEED = 0.1 only floors total speed)
     let clamped_bonus = calculate_research_cost(1.0, 1936, 1936, 150.0, 2.0);
-    assert_eq!(clamped_bonus.bonus_factor, 0.10);
-    assert_eq!(clamped_bonus.final_research_days, 10.0);
+    assert_eq!(clamped_bonus.bonus_factor, 0.4);
+    assert_eq!(clamped_bonus.final_research_days, 44.0);
 }
 
 #[test]

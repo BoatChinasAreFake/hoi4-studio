@@ -658,7 +658,7 @@ describe('Adversarial M3 Military Stress Harness', () => {
       expect(rollup.combatWidth).toBe(2);
       expect(rollup.manpower).toBe(500);
       expect(rollup.organization).toBe(10);
-      // Weighted Armor: 0.3 * 100 + 0.7 * 100 = 100
+      // Weighted Armor: 0.4 * 100 + 0.6 * 100 = 100
       expect(rollup.armor).toBe(100);
       // Weighted Piercing: 0.4 * 75 + 0.6 * 75 = 75
       expect(rollup.piercing).toBe(75);
@@ -667,12 +667,12 @@ describe('Adversarial M3 Military Stress Harness', () => {
       expect(rollup.hardAttack).toBe(32);
     });
 
-    it('verifies weighted armor formula on 24 infantry + 1 super heavy tank (30% max + 70% avg)', () => {
+    it('verifies weighted armor formula on 24 infantry + 1 super heavy tank (40% max + 60% avg)', () => {
       // 24 Infantry (armor = 0) + 1 Super Heavy Tank (armor = 140)
       // Total units = 25
       // Max armor = 140
       // Average armor = (24 * 0 + 1 * 140) / 25 = 140 / 25 = 5.6
-      // Weighted armor = 0.3 * 140 + 0.7 * 5.6 = 42.0 + 3.92 = 45.92 -> 45.9
+      // Weighted armor = 0.4 * 140 + 0.6 * 5.6 = 56.0 + 3.36 = 59.36 -> 59.4
       const grid: Array<Array<BattalionTypeInfo | null>> = [];
       let placedTank = false;
 
@@ -700,7 +700,7 @@ describe('Adversarial M3 Military Stress Harness', () => {
       const rollup = calculateDivisionStats(spaceMarineTemplate);
       expect(rollup.totalBattalions).toBe(25);
       expect(rollup.combatWidth).toBe(50); // 25 * 2
-      expect(rollup.armor).toBe(45.9);
+      expect(rollup.armor).toBe(59.4);
     });
 
     it('verifies weighted piercing formula on 24 infantry + 1 tank destroyer (40% max + 60% avg)', () => {

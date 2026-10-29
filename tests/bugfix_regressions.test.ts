@@ -104,8 +104,14 @@ describe('province realignment', () => {
     expect(r.replacementsCount).toBe(2);
   });
   it('supports swaps and leaves decimals / longer ids alone', () => {
-    const r = realignModProvinces('a = { 10 20 } b = 0.10 c = 100', new Map([[10, 20], [20, 10]]));
-    expect(r.modifiedScript).toBe('a = { 20 10 } b = 0.10 c = 100');
+    const r = realignModProvinces('provinces = { 10 20 } b = 0.10 c = 100', new Map([[10, 20], [20, 10]]));
+    expect(r.modifiedScript).toBe('provinces = { 20 10 } b = 0.10 c = 100');
+  });
+  it('only touches province positions, not ids, values or levels', () => {
+    const script = 'state = { id = 1 manpower = 1 history = { victory_points = { 1 1 } buildings = { infrastructure = 1 1 = { naval_base = 1 } } } provinces = { 1 } }';
+    const r = realignModProvinces(script, new Map([[1, 7]]));
+    expect(r.modifiedScript).toBe('state = { id = 1 manpower = 1 history = { victory_points = { 7 1 } buildings = { infrastructure = 1 7 = { naval_base = 1 } } } provinces = { 7 } }');
+    expect(r.replacementsCount).toBe(3);
   });
 });
 
@@ -130,11 +136,19 @@ describe('memory-reconstructed generators are marked UNVERIFIED and well-formed'
   });
   it('low-confidence generators carry a warning', () => {
     const f = generateFactionScript({ name: 'F', leaderTag: 'AAA', ideology: 'x', memberTags: [], goals: [], rules: { leaderVetoPeace: false, canPuppetJoin: false, worldTensionThreshold: 0, offensiveWarAllowed: false, mutualDefenseTrigger: false } as never });
-    expect(f.rulesScript).toContain('UNVERIFIED (low');
-    expect(generateTimedActivityScript({ id: 't', name: 'T', durationDays: 1, equipmentCost: {}, onExpireEffect: '', cancelTrigger: '' })).toContain('placeholder');
+    expect(f.rulesScript).toContain('UNVERIFIED (medium');
+    expect(generateTimedActivityScript({ id: 't', name: 'T', durationDays: 1, equipmentCost: {}, onExpireEffect: '', cancelTrigger: '' })).toContain('equipment_need');
     const d = generateDiploActionScript({ id: 'a', name: 'A', costPP: 1, costCP: 0, requiresAcceptance: true, allowedTrigger: '', visibleTrigger: '', aiAcceptanceFormula: '', onSentEffect: '', completeEffect: '', rejectEffect: '' });
     expect(d).toContain('a_acceptance = {');
+    expect(d).toMatch(/\nscripted_diplomatic_actions = \{\s+a = \{/);
     expect(brace(d)).toBe(true);
     expect(generateBopScript({ token: 'B', initialValue: 0, leftSide: 'l', rightSide: 'r', sides: [] })).toContain('UNVERIFIED');
+  });
+});
+
+import { calculateResearchCost as researchCost } from '../src/utils/phase4Generators';
+describe('research cost matches the wiki example and common/defines', () => {
+  it('110 days at +15% speed takes 96 days (cost / (1 + bonus), rounded up)', () => {
+    expect(researchCost(1.0, 1936, 1936, 15).finalResearchDays).toBe(96);
   });
 });

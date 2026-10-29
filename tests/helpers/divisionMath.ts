@@ -94,10 +94,10 @@ export function calculateDivisionStats(template: DivisionTemplate): DivisionComp
   const totalOrg = allUnits.reduce((sum, u) => sum + u.organization, 0)
   const organization = Number((totalOrg / allUnits.length).toFixed(1))
 
-  // Armor: 30% of highest armor + 70% of average armor across all units
+  // Armor: 40% of highest armor + 60% of average (NMilitary.ARMOR_VS_AVERAGE = 0.4) across all units
   const maxArmor = Math.max(...allUnits.map(u => u.armor), 0)
   const avgArmor = allUnits.reduce((sum, u) => sum + u.armor, 0) / allUnits.length
-  const armor = Number((0.3 * maxArmor + 0.7 * avgArmor).toFixed(1))
+  const armor = Number((0.4 * maxArmor + 0.6 * avgArmor).toFixed(1))
 
   // Piercing: 40% of highest piercing + 60% of average piercing across all units
   const maxPiercing = Math.max(...allUnits.map(u => u.piercing), 0)

@@ -155,9 +155,11 @@ describe('Adversarial Test Suite: Milestone M2 Empirical Stress Harness', () => 
       expect(assetContent).toContain('name = "my_epic_fanfare_cue"');
       expect(assetContent).toContain('file = "superevents/custom_audio.ogg"');
       expect(assetContent).toContain('volume = 1.0');
+      expect(assetContent).toContain('soundeffect = {');
 
       const eventContent = files['events/SuperEvents_custom_audio.txt'];
-      expect(eventContent).toContain('play_sound = "my_epic_fanfare_cue"');
+      expect(eventContent).toContain('sound_effect = my_epic_fanfare_cue');
+      expect(eventContent).not.toContain('play_sound');
       expect(eventContent).toContain('set_global_flag = super_event_custom_audio_active');
     });
 
@@ -261,13 +263,11 @@ describe('Adversarial Test Suite: Milestone M2 Empirical Stress Harness', () => 
 
       const { rulesScript, goalsScript } = generateFactionScript(grandCoalition);
 
-      expect(rulesScript).toContain('faction_rule_anti-hegemonic_united_front = {');
-      expect(rulesScript).toContain('leader = GER');
-      expect(rulesScript).toContain('ideology = fascism');
-      expect(rulesScript).toContain('leader_veto_peace_deals = yes');
-      expect(rulesScript).toContain('can_puppet_join = yes');
-      expect(rulesScript).toContain('world_tension_threshold = 0.85');
-      expect(rulesScript).toContain('members = { GER ENG SOV TUR USA JAP }');
+      // Vanilla schema (common/factions/rules): `type = member_rules` + `trigger`; unmapped options stay comments.
+      expect(rulesScript).toContain('anti_hegemonic_united_front_leader_only = {');
+      expect(rulesScript).toContain('type = member_rules');
+      expect(rulesScript).toContain('is_faction_leader = yes');
+      expect(rulesScript).toContain('# Intended members: GER ENG SOV TUR USA JAP');
 
       const { balanced: rBalanced } = countBraces(rulesScript);
       const { balanced: gBalanced } = countBraces(goalsScript);
@@ -322,10 +322,9 @@ describe('Adversarial Test Suite: Milestone M2 Empirical Stress Harness', () => 
       };
 
       const { rulesScript, goalsScript } = generateFactionScript(minimalFaction);
-      expect(rulesScript).toContain('world_tension_threshold = 0.00');
-      expect(rulesScript).toContain('offensive_war_allowed = no');
-      expect(rulesScript).toContain('mutual_defense_trigger = no');
-      expect(rulesScript).toContain('members = { TIB }');
+      expect(rulesScript).toContain('isolated_bastion_leader_only = {');
+      expect(rulesScript).toContain('tension threshold = 0');
+      expect(rulesScript).toContain('# Intended members: TIB');
       expect(goalsScript.split('\n')[0]).toBe('# Faction Goals for Isolated Bastion');
       expect(goalsScript).toContain('UNVERIFIED');
     });
@@ -740,8 +739,9 @@ describe('Adversarial Test Suite: Milestone M2 Empirical Stress Harness', () => 
       };
 
       const actScript = generateTimedActivityScript(complexActivity);
-      expect(actScript).toContain('timed_activity_build_coastal_fortifications = {');
-      expect(actScript).toContain('duration = 120');
+      expect(actScript).toContain('build_coastal_fortifications = {');
+      expect(actScript).toContain('equipment_need = {');
+      expect(actScript).not.toContain('timed_activity_');
       expect(actScript).toContain('infantry_equipment = 300');
       expect(actScript).toContain('support_equipment = 100');
       expect(actScript).toContain('artillery_equipment = 50');

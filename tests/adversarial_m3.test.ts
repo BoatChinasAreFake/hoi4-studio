@@ -130,19 +130,19 @@ describe('Adversarial M3 Suite: Stress Testing Military & Economy Engines', () =
   describe('Adversarial Research Cost Bounds & Calculations', () => {
     it('handles extreme ahead-of-time penalty (e.g. 10 years ahead)', () => {
       // 10 years ahead, penalty per year 2.0 -> ahead factor = 1 + 10 * 2.0 = 21.0
-      // Base cost 2.0 -> 200 base days * 21.0 = 4,200 days
+      // Base cost 2.0 -> 220 base days * 21.0 = 4,620 days
       const res = calculateResearchCost(2.0, 1946, 1936, 0, 2.0);
       expect(res.isAheadOfTime).toBe(true);
       expect(res.yearsAhead).toBe(10);
       expect(res.aheadPenaltyFactor).toBe(21.0);
-      expect(res.finalResearchDays).toBe(4200);
+      expect(res.finalResearchDays).toBe(4620);
     });
 
-    it('clamps excessive bonus to ensure at least 10% minimum research time', () => {
-      // 100% or 150% bonus discount should clamp bonusFactor to 0.1
+    it('large bonuses shorten research without ever reaching zero', () => {
+      // bonuses add to research speed: 150% -> time factor 1 / 2.5
       const res = calculateResearchCost(1.0, 1936, 1936, 150, 2.0);
-      expect(res.bonusFactor).toBe(0.1);
-      expect(res.finalResearchDays).toBe(10); // 100 * 0.1
+      expect(res.bonusFactor).toBeCloseTo(0.4, 10);
+      expect(res.finalResearchDays).toBe(44); // 110 * 0.4
     });
 
     it('correctly handles zero ahead of time penalty when research is current or past', () => {
@@ -150,7 +150,7 @@ describe('Adversarial M3 Suite: Stress Testing Military & Economy Engines', () =
       expect(res.isAheadOfTime).toBe(false);
       expect(res.yearsAhead).toBe(0);
       expect(res.aheadPenaltyFactor).toBe(1.0);
-      expect(res.finalResearchDays).toBe(100);
+      expect(res.finalResearchDays).toBe(110);
     });
   });
 
@@ -294,8 +294,8 @@ describe('Adversarial M3 Suite: Stress Testing Military & Economy Engines', () =
       const rollup = calculateDivisionStats(template);
       expect(rollup.totalBattalions).toBe(2);
       expect(rollup.maximumSpeed).toBe(3.5); // Constrained by slowest!
-      // Armor rollup test: 30% max (100) + 70% avg (50) = 30 + 35 = 65
-      expect(rollup.armor).toBe(65);
+      // Armor rollup test: 40% max (100) + 60% avg (50) = 40 + 30 = 70 (ARMOR_VS_AVERAGE = 0.4)
+      expect(rollup.armor).toBe(70);
       // Piercing rollup test: 40% max (80) + 60% avg (42.5) = 32 + 25.5 = 57.5
       expect(rollup.piercing).toBe(57.5);
     });

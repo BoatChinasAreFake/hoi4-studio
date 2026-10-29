@@ -473,7 +473,8 @@ create_country_leader = {
 }
 ";
 
+    // create_country_leader is still valid in HOI4 1.19.4; the script must come back untouched and balanced.
     let result = migrate_deprecated_syntax(legacy_script);
-    assert!(result.total_migrations >= 1);
-    assert!(result.migrated_content.contains("# [MIGRATED]"));
+    assert_eq!(result.total_migrations, 0);
+    assert_eq!(result.migrated_content.trim_end(), legacy_script.trim_end());
 }

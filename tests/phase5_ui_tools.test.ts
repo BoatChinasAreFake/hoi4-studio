@@ -166,16 +166,19 @@ describe('Phase 5: UI Layout Tools, Asset Utilities, and Publishing Workflows', 
 
       const result = migrateCountryLeaders(legacyLeaderScript);
       expect(result.migratedCount).toBe(1);
-      expect(result.migratedScript).toContain('characters = {');
-      expect(result.migratedScript).toContain('FRA_leon_blum = {');
-      expect(result.migratedScript).toContain('name = "Leon Blum"');
-      expect(result.migratedScript).toContain('large = "gfx/leaders/FRA/portrait_leon_blum.dds"');
-      expect(result.migratedScript).toContain('ideology = democratic_socialism');
-      expect(result.migratedScript).toContain('traits = { popular_figurehead }');
+      // History file keeps only a recruit_character call; the definition goes to common/characters.
+      expect(result.migratedScript).toContain('recruit_character = FRA_leon_blum');
+      expect(result.migratedScript).not.toContain('characters = {');
       expect(result.migratedScript).not.toContain('create_country_leader = {');
+      expect(result.charactersScript).toContain('characters = {');
+      expect(result.charactersScript).toContain('FRA_leon_blum = {');
+      expect(result.charactersScript).toContain('name = "Leon Blum"');
+      expect(result.charactersScript).toContain('large = "gfx/leaders/FRA/portrait_leon_blum.dds"');
+      expect(result.charactersScript).toContain('ideology = democratic_socialism');
+      expect(result.charactersScript).toContain('traits = { popular_figurehead }');
     });
 
-    it('migrates deprecated triggers to modern HOI4 syntax', () => {
+    it('leaves valid triggers alone (has_faction does not exist in vanilla)', () => {
       const legacyScript = `
         trigger = {
           is_in_faction = yes
@@ -185,12 +188,9 @@ describe('Phase 5: UI Layout Tools, Asset Utilities, and Publishing Workflows', 
       `;
 
       const report = migrateDeprecatedScript(legacyScript);
-      expect(report.totalMigrations).toBe(3);
-      expect(report.migratedContent).toContain('has_faction = yes');
-      expect(report.migratedContent).toContain('is_subject = yes');
-      expect(report.migratedContent).toContain('rule = { can_create_factions = yes }');
-      expect(report.migratedContent).not.toContain('is_in_faction = yes');
-      expect(report.migratedContent).not.toContain('is_puppet = yes');
+      expect(report.totalMigrations).toBe(0);
+      expect(report.migratedContent).toBe(legacyScript);
+      expect(report.migratedContent).not.toContain('has_faction');
     });
 
     it('detects shifted province IDs by RGB in definition.csv and remaps mod state files with word boundary safety', () => {

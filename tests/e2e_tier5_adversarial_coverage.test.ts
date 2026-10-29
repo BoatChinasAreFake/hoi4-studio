@@ -535,7 +535,7 @@ describe('Tier 5 Adversarial Coverage Hardening Suite', () => {
     it('calculates exact armor and piercing for a single tank battalion template', () => {
       // 1 Heavy Tank battalion: armor = 100, piercing = 80
       // In HOI4:
-      // armor = 0.3 * max + 0.7 * avg = 0.3 * 100 + 0.7 * 100 = 100.0
+      // armor = 0.4 * max + 0.6 * avg = 0.4 * 100 + 0.6 * 100 = 100.0
       // piercing = 0.4 * max + 0.6 * avg = 0.4 * 80 + 0.6 * 80 = 80.0
       const tank = makeBattalion({
         id: 'heavy_tank',
@@ -566,10 +566,10 @@ describe('Tier 5 Adversarial Coverage Hardening Suite', () => {
       expect(stats.maximumSpeed).toBe(5.0);
     });
 
-    it('accurately applies HOI4 weighted armor (30/70) and piercing (40/60) with mixed battalions', () => {
+    it('accurately applies HOI4 weighted armor (40/60) and piercing (40/60) with mixed battalions', () => {
       // 1 Tank (armor 100, piercing 80) + 1 Infantry (armor 0, piercing 4)
       // allUnits = [tank, inf] -> length = 2
-      // maxArmor = 100, avgArmor = (100 + 0) / 2 = 50 -> armor = 0.3 * 100 + 0.7 * 50 = 30 + 35 = 65.0
+      // maxArmor = 100, avgArmor = (100 + 0) / 2 = 50 -> armor = 0.4 * 100 + 0.6 * 50 = 40 + 30 = 70.0
       // maxPiercing = 80, avgPiercing = (80 + 4) / 2 = 42 -> piercing = 0.4 * 80 + 0.6 * 42 = 32 + 25.2 = 57.2
       const tank = makeBattalion({ id: 'tank', armor: 100, piercing: 80 });
       const inf = makeBattalion({ id: 'inf', armor: 0, piercing: 4 });
@@ -586,7 +586,7 @@ describe('Tier 5 Adversarial Coverage Hardening Suite', () => {
       };
 
       const stats = calculateDivisionStats(state);
-      expect(stats.armor).toBe(65.0);
+      expect(stats.armor).toBe(70.0);
       expect(stats.piercing).toBe(57.2);
     });
 

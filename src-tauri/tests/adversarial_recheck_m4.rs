@@ -183,16 +183,13 @@ fn test_recheck_trigger_migration_rules_rust() {
 
     let res = migrate_deprecated_syntax(script);
 
-    assert_eq!(res.total_migrations, 5, "Must migrate all 5 deprecated trigger instances");
-    assert!(res.migrated_content.contains("has_faction = yes"));
-    assert!(res.migrated_content.contains("has_faction = no"));
-    assert!(res.migrated_content.contains("is_subject = yes"));
-    assert!(res.migrated_content.contains("is_subject = no"));
-    assert!(res.migrated_content.contains("rule = { can_create_factions = yes }"));
-
-    assert!(!res.migrated_content.contains("is_in_faction = yes"));
-    assert!(!res.migrated_content.contains("is_in_faction = no"));
-    assert!(!res.migrated_content.contains("is_puppet = yes"));
-    assert!(!res.migrated_content.contains("is_puppet = no"));
-    assert!(!res.migrated_content.contains("can_create_factions = yes\n"));
+    // These are all valid in HOI4 1.19.4 (`has_faction` does not exist), so nothing may be rewritten.
+    assert_eq!(res.total_migrations, 0);
+    assert!(res.migrated_content.contains("is_in_faction = yes"));
+    assert!(res.migrated_content.contains("is_in_faction = no"));
+    assert!(res.migrated_content.contains("is_puppet = yes"));
+    assert!(res.migrated_content.contains("is_puppet = no"));
+    assert!(res.migrated_content.contains("can_create_factions = yes"));
+    assert!(!res.migrated_content.contains("has_faction"));
+    assert!(!res.migrated_content.contains("is_subject"));
 }

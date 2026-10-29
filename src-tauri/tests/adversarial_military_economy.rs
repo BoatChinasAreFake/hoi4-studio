@@ -176,7 +176,7 @@ fn test_adversarial_market_and_research_bounds() {
     let research = calculate_research_cost(2.0, 1946, 1936, 0.0, 2.0);
     assert!(research.is_ahead_of_time);
     assert_eq!(research.ahead_penalty_factor, 21.0);
-    assert_eq!(research.final_research_days, 4200.0);
+    assert_eq!(research.final_research_days, 4620.0); // 2.0 * 110 * 21
 
     // Market: 0 civ factories allocation (should clamp to 1 factory min)
     let market = calculate_market_delivery(100, 5.0, 0, 0.0, 5.0, None);
