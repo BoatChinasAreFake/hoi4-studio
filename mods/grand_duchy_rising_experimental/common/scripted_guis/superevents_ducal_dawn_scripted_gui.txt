@@ -1,0 +1,15 @@
+scripted_gui = {
+    super_event_ducal_dawn_window = {
+        context_type = player_context
+        window_name = "super_event_ducal_dawn_window"
+        parent_window_token = top_bar
+        visible = {
+            has_global_flag = super_event_ducal_dawn_active
+        }
+        effects = {
+            Option_click = {
+                clr_global_flag = super_event_ducal_dawn_active
+            }
+        }
+    }
+}

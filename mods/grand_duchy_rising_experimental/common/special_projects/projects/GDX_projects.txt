@@ -1,0 +1,22 @@
+gdx_sp_steel_project = {
+	specialization = specialization_land
+	allowed = {
+		has_dlc = "Gotterdammerung"
+	}
+	breakthrough_cost = {
+		specialization_land = 1
+	}
+	resource_cost = {
+		resources = {
+			steel = 4
+			aluminium = 2
+		}
+	}
+	prototype_time = sp_time.prototype.medium
+	complexity = sp_complexity.medium
+	project_output = {
+		country_effects = {
+			custom_effect_tooltip = gdx_sp_steel_project_completion_tt
+		}
+	}
+}

@@ -5,6 +5,7 @@ import type {
   SpecialProjectComplexity,
   ScientistTalent,
 } from '../../types/economy';
+import { generateSpecialProjectScript } from '../../utils/exporters';
 import {
   Plus,
   Trash2,
@@ -180,29 +181,7 @@ export const SpecialProjectsStudio: React.FC<{ onNotify?: (msg: string) => void 
     onNotify?.(`Deleted project: ${id}`);
   };
 
-  const paradoxScript = `special_project = {
-    name = "${selectedProject.id}"
-    special_project_type = ${selectedProject.projectType}
-    facility_model = "${selectedProject.facilityType}"
-    allowed = { has_dlc = "Gotterdammerung" }
-    
-    prototype_cost = {
-        civilian_factories = ${selectedProject.prototypeCostCivFactories}
-        resources = { ${Object.entries(selectedProject.prototypeCostResources)
-          .map(([res, amt]) => `${res} = ${amt}`)
-          .join(' ')} }
-    }
-    prototype_time = ${selectedProject.prototypeTimeDays}
-    complexity = ${selectedProject.complexity}
-    
-    project_output = {
-        name = ${selectedProject.id}_output
-        effects = {
-            ${selectedProject.rewardOutput.enableEquipment ? `enable_equipment = ${selectedProject.rewardOutput.enableEquipment}` : ''}
-            custom_effect_tooltip = "${selectedProject.rewardOutput.customEffectTooltip}"
-        }
-    }
-}`;
+  const paradoxScript = generateSpecialProjectScript(selectedProject);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#101512] text-[#e3e5d9] overflow-hidden select-none">

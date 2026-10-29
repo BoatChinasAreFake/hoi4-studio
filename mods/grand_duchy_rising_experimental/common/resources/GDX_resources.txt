@@ -1,0 +1,9 @@
+resources = {
+
+	gdx_ducal_ore = {
+		icon_frame = 1
+		cic = 0.125
+		convoys = 0.1
+	}
+
+}

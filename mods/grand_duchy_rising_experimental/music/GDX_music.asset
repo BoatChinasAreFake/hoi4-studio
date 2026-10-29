@@ -1,0 +1,8 @@
+# The .ogg files are not generated; place them next to this file in music/.
+
+music = {
+	name = "gdx_ducal_theme"
+	file = "gdx_ducal_theme.ogg"
+	volume = 0.65
+}
+

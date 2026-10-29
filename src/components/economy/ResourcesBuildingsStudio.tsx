@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { StrategicResourceDef, CustomBuildingDef } from '../../types/economy';
+import { generateResourcesScript, generateBuildingsScript } from '../../utils/exporters';
 import {
   Gem,
   Building,
@@ -193,28 +194,8 @@ export const ResourcesBuildingsStudio: React.FC<{ onNotify?: (msg: string) => vo
     setSelectedBuildingId(next[0].id);
   };
 
-  const paradoxResourcesScript = `resources = {\n${resources
-    .map(
-      (r) => `    ${r.id} = {
-        cic_cost = ${r.baseCicCost} # 1 factory per 8 units
-        convoys = ${r.convoysRequiredPerUnit}
-    }`
-    )
-    .join('\n\n')}\n}`;
-
-  const paradoxBuildingsScript = `buildings = {\n${buildings
-    .map(
-      (b) => `    ${b.id} = {
-        base_cost = ${b.baseCost}
-        ${b.perLevelExtraCost > 0 ? `per_level_extra_cost = ${b.perLevelExtraCost}` : ''}
-        max_level = ${b.maxLevel}
-        provincial = ${b.isProvincial ? 'yes' : 'no'}
-        shares_slots = ${b.sharesSlots ? 'yes' : 'no'}
-        show_on_map = ${b.showOnMap ? 'yes' : 'no'}
-        damage_factor = ${b.damageFactor.toFixed(2)}
-    }`
-    )
-    .join('\n\n')}\n}`;
+  const paradoxResourcesScript = generateResourcesScript(resources);
+  const paradoxBuildingsScript = generateBuildingsScript(buildings);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#101512] text-[#e3e5d9] overflow-hidden select-none">

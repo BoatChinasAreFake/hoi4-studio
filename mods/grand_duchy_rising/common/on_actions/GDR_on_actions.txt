@@ -7,6 +7,25 @@ on_actions = {
 					set_variable = { GDR_progress = 0 }
 					recruit_character = GDR_general_marie_thill
 					recruit_character = GDR_general_paul_hoffmann
+					recruit_character = GDR_leader_charlotte_weis
+					recruit_character = GDR_admiral_pierre_lenz
+					recruit_character = GDR_scientist_elise_roth
+					division_template = {
+					    name = "Garde Grand-Ducale"
+					    regiments = {
+					        infantry = { x = 0 y = 0 }
+					        infantry = { x = 0 y = 1 }
+					        infantry = { x = 0 y = 2 }
+					        infantry = { x = 1 y = 0 }
+					        infantry = { x = 1 y = 1 }
+					        infantry = { x = 1 y = 2 }
+					        artillery_brigade = { x = 2 y = 0 }
+					    }
+					    support = {
+					        engineer = { x = 0 y = 0 }
+					        field_hospital = { x = 0 y = 1 }
+					    }
+					}
 					country_event = { id = gdr.1 days = 2 }
 				}
 			}

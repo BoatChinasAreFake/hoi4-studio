@@ -1,0 +1,11 @@
+ideas = {
+	country = {
+		GDX_national_spirit = {
+			picture = generic_intel_bonus
+			allowed = { always = yes }
+			modifier = {
+				political_power_gain = 0.15
+			}
+		}
+	}
+}

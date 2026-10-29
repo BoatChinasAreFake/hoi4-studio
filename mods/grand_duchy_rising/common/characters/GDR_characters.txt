@@ -21,6 +21,35 @@ characters = {
 			logistics_skill = 2
 		}
 	}
+	GDR_leader_charlotte_weis = {
+		name = "Charlotte Weis"
+		gender = female
+		country_leader = {
+			ideology = neutrality
+			expire = "1965.1.1"
+			id = -1
+		}
+	}
+	GDR_admiral_pierre_lenz = {
+		name = "Pierre Lenz"
+		gender = male
+		navy_leader = {
+			skill = 2
+			attack_skill = 2
+			defense_skill = 2
+			maneuvering_skill = 2
+			coordination_skill = 2
+		}
+	}
+	GDR_scientist_elise_roth = {
+		name = "Elise Roth"
+		gender = female
+		scientist = {
+			skills = {
+				specialization_nuclear = 2
+			}
+		}
+	}
 	GDR_adv_jean_schmit = {
 		name = "Jean Schmit"
 		gender = male

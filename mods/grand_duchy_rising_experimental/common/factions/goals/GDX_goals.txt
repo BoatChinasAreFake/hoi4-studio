@@ -1,0 +1,12 @@
+# Faction Goals for Ducal League
+# UNVERIFIED (medium confidence): syntax written from memory of vanilla common/factions/goals/; compare with the vanilla files and check error.log.
+faction_goal_gdx_open_borders = {
+	# Define these localisation keys: gdx_open_borders_goal_name = "Open Borders", gdx_open_borders_goal_desc = "Keep the League's roads open."
+	name = gdx_open_borders_goal_name
+	description = gdx_open_borders_goal_desc
+	category = short_term
+	visible = { always = yes }
+	completed = { always = no }
+	# Intended reward (apply via complete_effect): production_speed_buildings_factor = 0.05
+	complete_effect = { }
+}

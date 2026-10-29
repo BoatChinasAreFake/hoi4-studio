@@ -277,7 +277,8 @@ export function scaffoldCountryFiles(config: CountryWizardConfig): CountryWizard
   // 1. common/countries/<name>.txt
   const countryCommon = [
     `graphical_culture = ${graphicalCulture}`,
-    `graphical_culture_2d = ${graphicalCulture}_2d`,
+    // vanilla pairs western_european_gfx with western_european_2d
+    `graphical_culture_2d = ${graphicalCulture.replace(/_gfx$/, '')}_2d`,
     `color = { ${color[0]} ${color[1]} ${color[2]} }`,
     '',
   ].join('\n');

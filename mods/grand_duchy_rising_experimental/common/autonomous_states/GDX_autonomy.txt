@@ -1,0 +1,18 @@
+# Autonomy Progression Levels (common/autonomous_states/)
+# UNVERIFIED (medium confidence): syntax written from memory of vanilla common/autonomous_states/00_autonomous_states.txt; compare with the vanilla files and check error.log.
+autonomy_state = {
+	id = autonomy_gdx_ducal_dominion
+	default = no
+	is_puppet = yes
+	min_freedom_level = 0.35
+	manpower_influence = 0.40
+	rule = {
+		can_not_declare_war = yes
+		can_decline_call_to_war = no
+		can_be_spymaster = no
+		contributes_operatives = yes
+	}
+	modifier = {
+		autonomy_manpower_share = 0.3
+	}
+}

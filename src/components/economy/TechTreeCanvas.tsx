@@ -9,7 +9,7 @@ import {
   Link,
   Code,
 } from 'lucide-react';
-import { calculateResearchCost } from '../../utils/phase4Generators';
+import { calculateResearchCost, generateTechnologyScript } from '../../utils/phase4Generators';
 
 const GRID_W = 120;
 const GRID_H = 150;
@@ -366,49 +366,7 @@ export const TechTreeCanvas: React.FC<{ onNotify?: (msg: string) => void }> = ({
   };
 
   // Generate Clausewitz .txt representation
-  const paradoxScript = useMemo(() => {
-    let script = 'technologies = {\n';
-    currentFolderNodes.forEach((n) => {
-      script += `    ${n.id} = {\n`;
-      if (n.enableEquipments && n.enableEquipments.length > 0) {
-        script += '        enable_equipments = {\n';
-        n.enableEquipments.forEach((eq) => {
-          script += `            ${eq}\n`;
-        });
-        script += '        }\n';
-      }
-      script += `        research_cost = ${n.researchCost.toFixed(1)}\n`;
-      script += `        start_year = ${n.startYear}\n`;
-      script += '        folder = {\n';
-      script += `            name = ${n.folder}\n`;
-      script += `            position = { x = ${n.x} y = ${n.y} }\n`;
-      script += '        }\n';
-      if (n.dependencies.length > 0) {
-        script += '        dependencies = {\n';
-        n.dependencies.forEach((dep) => {
-          script += `            ${dep} = 1\n`;
-        });
-        script += '        }\n';
-      }
-      if (n.mutuallyExclusive.length > 0) {
-        script += '        xor = {\n';
-        n.mutuallyExclusive.forEach((xor) => {
-          script += `            ${xor}\n`;
-        });
-        script += '        }\n';
-      }
-      if (n.categories.length > 0) {
-        script += '        categories = {\n';
-        n.categories.forEach((cat) => {
-          script += `            ${cat}\n`;
-        });
-        script += '        }\n';
-      }
-      script += '    }\n\n';
-    });
-    script += '}\n';
-    return script;
-  }, [currentFolderNodes]);
+  const paradoxScript = useMemo(() => generateTechnologyScript(currentFolderNodes), [currentFolderNodes]);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#101512] text-[#e3e5d9] overflow-hidden select-none">

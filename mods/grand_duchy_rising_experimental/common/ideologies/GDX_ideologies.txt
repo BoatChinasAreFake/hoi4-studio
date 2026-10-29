@@ -1,0 +1,28 @@
+# UNVERIFIED (medium confidence): syntax written from memory of vanilla common/ideologies/00_ideologies.txt; compare with the vanilla files and check error.log.
+ideologies = {
+	ducalism = {
+		types = {
+			ducalism_court = {
+				can_be_randomly_selected = no
+			}
+			ducalism_republic = {
+				can_be_randomly_selected = no
+			}
+		}
+		# Entries are localisation keys, e.g. FACTION_NAME_DUCALISM_1
+		dynamic_faction_names = {
+			"FACTION_NAME_DUCALISM_1"
+		}
+		color = { 34 86 160 }
+		rules = {
+			can_force_government = no
+			can_puppet = no
+			can_send_volunteers = yes
+			can_be_spymaster = no
+			can_declare_war_on_same_ideology = no
+		}
+		can_host_government_in_exile = yes
+		war_impact_on_world_tension = 0.30
+		faction_impact_on_world_tension = 0.10
+	}
+}

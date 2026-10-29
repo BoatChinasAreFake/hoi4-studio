@@ -5,6 +5,7 @@ import type {
   ModularChassisDesign,
   CompositeChassisStats,
 } from '../../types/military';
+import { generateEquipmentVariantScript } from '../../utils/exporters';
 import {
   Shield,
   Plane,
@@ -465,20 +466,7 @@ export const ChassisDesigner: React.FC<{ onNotify?: (msg: string) => void }> = (
     }
   }, [selectedDesign.category]);
 
-  const paradoxScript = `create_equipment_variant = {
-    name = "${selectedDesign.name}"
-    type = ${selectedDesign.chassisType}
-    parent_version = 0
-    modules = {
-${Object.entries(selectedDesign.slots)
-  .map(([slot, mod]) => `        ${slot} = ${mod}`)
-  .join('\n')}
-    }
-    upgrades = {
-        tank_armor_upgrade = ${selectedDesign.armorLevel}
-        tank_engine_upgrade = ${selectedDesign.engineLevel}
-    }
-}`;
+  const paradoxScript = generateEquipmentVariantScript(selectedDesign);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#101512] text-[#e3e5d9] overflow-hidden select-none">

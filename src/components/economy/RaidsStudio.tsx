@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { RaidMissionDef, RaidCategory } from '../../types/economy';
+import { generateRaidScript } from '../../utils/exporters';
 import {
   Crosshair,
   Plus,
@@ -209,27 +210,7 @@ export const RaidsStudio: React.FC<{ onNotify?: (msg: string) => void }> = ({ on
     }, 1200);
   };
 
-  const paradoxScript = `raid_type = {
-    name = "${selectedRaid.id}"
-    category = ${selectedRaid.category}
-    command_power = ${selectedRaid.commandPower}
-    arrow = {
-        type = ${selectedRaid.arrowType}
-    }
-    targeting = {
-        state = ${selectedRaid.targetStateId || 1}
-        ${selectedRaid.targetProvinceId ? `province = ${selectedRaid.targetProvinceId}` : ''}
-    }
-    detection_risk = ${(selectedRaid.detectionRisk / 100).toFixed(2)}
-    success_effect = {
-        ${selectedRaid.successEffect.damageBuildingType ? `damage_building = { type = ${selectedRaid.successEffect.damageBuildingType} damage = ${selectedRaid.successEffect.damageBuildingLevel || 1} }` : ''}
-        ${selectedRaid.successEffect.addWarSupport ? `add_war_support = ${selectedRaid.successEffect.addWarSupport}` : ''}
-    }
-    failure_effect = {
-        ${selectedRaid.failureEffect.addWarSupport ? `add_war_support = ${selectedRaid.failureEffect.addWarSupport}` : ''}
-        ${selectedRaid.failureEffect.killOperativesChance ? `kill_country_leader = no` : ''}
-    }
-}`;
+  const paradoxScript = generateRaidScript(selectedRaid);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#101512] text-[#e3e5d9] overflow-hidden select-none">

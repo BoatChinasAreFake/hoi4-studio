@@ -1,0 +1,16 @@
+buildings = {
+
+	gdx_ducal_fort = {
+		show_on_map = 1
+		base_cost = 500
+		per_level_extra_cost = 500
+		icon_frame = 1
+		value = 1
+		infrastructure_construction_effect = yes
+		# damage factor 1.00 has no vanilla key; set per-building damage in effects instead
+		level_cap = {
+			province_max = 5
+		}
+	}
+
+}

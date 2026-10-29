@@ -1,0 +1,8 @@
+# Timed National Activity: Border Exercise
+# Vanilla only supports equipment_need here. Not expressible: duration = 60 days, cancel trigger, on-expire effect.
+# UNVERIFIED (medium confidence): syntax written from memory of vanilla common/timed_activities/; compare with the vanilla files and check error.log.
+gdx_border_exercise = {
+	equipment_need = {
+		infantry_equipment = 500
+	}
+}

@@ -1,0 +1,10 @@
+# Faction rule for Ducal League
+# UNVERIFIED (medium confidence): syntax written from memory of vanilla common/factions/rules/; compare with the vanilla files and check error.log.
+# Not expressible as vanilla keys (set via the matching rule types if needed): leader veto peace = true, puppets may join = false, tension threshold = 0.3, offensive wars = false, mutual defence = true
+# Intended members: GDX LUX
+ducal_league_leader_only = {
+	type = member_rules
+	trigger = {
+		is_faction_leader = yes
+	}
+}

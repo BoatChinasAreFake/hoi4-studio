@@ -1,0 +1,43 @@
+types = {
+
+	gdx_border_strike = {
+		category = air_raids
+		days_to_prepare = 30
+		days_re_enable = 60
+		command_power = 20
+		allowed = { has_dlc = "Gotterdammerung" }
+		arrow = {
+			type = air
+		}
+		target_type = {
+			province = any
+		}
+		success_factors = {
+			success = {
+				base = 0.60
+			}
+		}
+		success_levels = {
+			failure = {
+				actor_effects = {
+					raid_add_unit_experience = 0.1
+				}
+			}
+			success = {
+				victim_effects = {
+				var:target_state = {
+					hidden_effect = {
+						damage_building = {
+							type = industrial_complex
+							damage = 1
+						}
+					}
+				}
+				}
+				actor_effects = {
+					raid_add_unit_experience = 0.2
+				}
+			}
+		}
+	}
+}

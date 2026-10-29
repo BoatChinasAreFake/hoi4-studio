@@ -1,0 +1,36 @@
+# UNVERIFIED (medium confidence): syntax written from memory of vanilla common/bop/; compare with the vanilla files and check error.log.
+GDX_ducal_balance = {
+	initial_value = 0.00
+	left_side = GDX_bop_chamber
+	right_side = GDX_bop_crown
+	range = {
+		id = GDX_balanced_range
+		min = -0.20
+		max = 0.20
+		modifier = {
+			stability_factor = 0.05
+		}
+	}
+	side = {
+		id = GDX_bop_chamber
+		range = {
+			id = GDX_chamber_strong
+			min = -1.00
+			max = -0.20
+			modifier = {
+				political_power_gain = 0.1
+			}
+		}
+	}
+	side = {
+		id = GDX_bop_crown
+		range = {
+			id = GDX_crown_strong
+			min = 0.20
+			max = 1.00
+			modifier = {
+				war_support_factor = 0.1
+			}
+		}
+	}
+}

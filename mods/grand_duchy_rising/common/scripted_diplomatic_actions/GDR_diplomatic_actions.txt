@@ -1,0 +1,34 @@
+# Scripted Diplomatic Action: Offer Steel Partnership
+# UNVERIFIED (low confidence): syntax written from memory of vanilla common/scripted_diplomatic_actions/; compare with the vanilla files and check error.log.
+scripted_diplomatic_actions = {
+    GDR_offer_steel_partnership = {
+        allowed = {
+            original_tag = LUX
+        }
+        visible = {
+            always = yes
+        }
+        selectable = {
+            always = yes
+        }
+        requires_acceptance = yes
+        cost = 25
+        command_power = 0
+
+        ai_acceptance = {
+            GDR_offer_steel_partnership_acceptance = {
+                base = 40
+            }
+        }
+
+        on_sent_effect = {
+            
+        }
+        complete_effect = {
+            add_political_power = 10
+        }
+        reject_effect = {
+            
+        }
+    }
+}

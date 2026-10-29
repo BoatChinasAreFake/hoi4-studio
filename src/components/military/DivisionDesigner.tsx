@@ -5,6 +5,7 @@ import type {
   DivisionRollupStats,
   RegimentalAttachment,
 } from '../../types/military';
+import { generateDivisionTemplateScript } from '../../utils/phase4Generators';
 import {
   Shield,
   Gauge,
@@ -498,28 +499,7 @@ export const DivisionDesigner: React.FC<{ onNotify?: (msg: string) => void }> = 
     }
   };
 
-  const paradoxScript = `division_template = {
-    name = "${template.name}"
-    
-    regiments = {
-${template.grid
-  .flatMap((col, cIdx) =>
-    col
-      .map((slot, rIdx) =>
-        slot ? `        ${slot.id} = { x = ${cIdx} y = ${rIdx} }` : null
-      )
-      .filter(Boolean)
-  )
-  .join('\n')}
-    }
-    
-    support = {
-${template.supportCompanies
-  .map((slot, sIdx) => (slot ? `        ${slot.id} = { x = 0 y = ${sIdx} }` : null))
-  .filter(Boolean)
-  .join('\n')}
-    }
-}`;
+  const paradoxScript = generateDivisionTemplateScript(template);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#101512] text-[#e3e5d9] overflow-hidden select-none">

@@ -1,0 +1,10 @@
+GDX_create_variants = {
+create_equipment_variant = {
+	name = "Ducal Tank"
+	type = light_tank_chassis
+	parent_version = 0
+	allow_without_tech = yes
+	modules = {
+	}
+}
+}

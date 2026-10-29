@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { MusicStation, MusicTrack } from '../../types/ui';
+import { generateMusicStationScript, generateMusicAssetScript } from '../../utils/exporters';
 import {
   Radio,
   Play,
@@ -143,42 +144,8 @@ export const MusicStationStudio: React.FC<MusicStationStudioProps> = ({ onNotify
     onNotify?.('Added modifier rule');
   };
 
-  // Generate Clausewitz music.txt
-  const generatedMusicTxt = useMemo(() => {
-    let out = `# CLAUSEWITZ MUSIC PLAYBACK SCRIPTS (music/music.txt)\n\n`;
-    for (const track of station.tracks) {
-      out += `music = {\n`;
-      out += `\tsong = "${track.song}"\n`;
-      out += `\tchance = {\n`;
-      out += `\t\tfactor = ${track.chanceFactor.toFixed(1)}\n`;
-
-      for (const mod of track.modifiers) {
-        out += `\t\tmodifier = {\n`;
-        out += `\t\t\tfactor = ${mod.factor.toFixed(1)}\n`;
-        for (const [cond, val] of Object.entries(mod.conditions)) {
-          out += `\t\t\t${cond} = ${val}\n`;
-        }
-        out += `\t\t}\n`;
-      }
-
-      out += `\t}\n`;
-      out += `}\n\n`;
-    }
-    return out;
-  }, [station]);
-
-  // Generate Clausewitz music.asset
-  const generatedMusicAsset = useMemo(() => {
-    let out = `# CLAUSEWITZ MUSIC ASSET DEFINITIONS (music/music.asset)\n\n`;
-    for (const track of station.tracks) {
-      out += `music = {\n`;
-      out += `\tname = "${track.song}"\n`;
-      out += `\tfile = "${track.assetFile.split('/').pop()}"\n`;
-      out += `\tvolume = 0.65\n`;
-      out += `}\n\n`;
-    }
-    return out;
-  }, [station]);
+  const generatedMusicTxt = useMemo(() => generateMusicStationScript(station.id ?? "custom_station", station.tracks), [station]);
+  const generatedMusicAsset = useMemo(() => generateMusicAssetScript(station.tracks), [station]);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#101512] text-[#e3e5d9] overflow-hidden select-none">

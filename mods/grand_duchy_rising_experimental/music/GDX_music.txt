@@ -1,0 +1,15 @@
+music_station = "gdx_station"
+
+music = {
+	song = "gdx_ducal_theme"
+	chance = {
+		modifier = {
+			factor = 1
+		}
+		modifier = {
+			factor = 0.5
+			has_war = yes
+		}
+	}
+}
+

@@ -361,3 +361,66 @@ export function calculateDivisionStats(template: DivisionTemplateState): Divisio
     trainingTime,
   };
 }
+
+/**
+ * common/technologies/*.txt for one folder. Matches the vanilla layout: enable_equipments, research_cost,
+ * start_year, folder = { name position }, dependencies, xor, categories.
+ */
+export function generateTechnologyScript(nodes: TechNode[]): string {
+  const NL = String.fromCharCode(10);
+  const out: string[] = ['technologies = {'];
+  for (const n of nodes) {
+    out.push(`    ${n.id} = {`);
+    if (n.enableEquipments && n.enableEquipments.length > 0) {
+      out.push('        enable_equipments = {');
+      for (const eq of n.enableEquipments) out.push(`            ${eq}`);
+      out.push('        }');
+    }
+    out.push(`        research_cost = ${n.researchCost.toFixed(1)}`);
+    out.push(`        start_year = ${n.startYear}`);
+    out.push('        folder = {');
+    out.push(`            name = ${n.folder}`);
+    out.push(`            position = { x = ${n.x} y = ${n.y} }`);
+    out.push('        }');
+    if (n.dependencies.length > 0) {
+      out.push('        dependencies = {');
+      for (const dep of n.dependencies) out.push(`            ${dep} = 1`);
+      out.push('        }');
+    }
+    if (n.mutuallyExclusive.length > 0) {
+      out.push('        xor = {');
+      for (const x of n.mutuallyExclusive) out.push(`            ${x}`);
+      out.push('        }');
+    }
+    if (n.categories.length > 0) {
+      out.push('        categories = {');
+      for (const c of n.categories) out.push(`            ${c}`);
+      out.push('        }');
+    }
+    out.push('    }', '');
+  }
+  out.push('}', '');
+  return out.join(NL);
+}
+
+/** division_template effect/history block (vanilla: name, regiments = { <unit> = { x y } }, support = { ... }). */
+export function generateDivisionTemplateScript(template: DivisionTemplateState): string {
+  const NL = String.fromCharCode(10);
+  const regiments = template.grid.flatMap((col, cIdx) =>
+    col.flatMap((slot, rIdx) => (slot ? [`        ${slot.id} = { x = ${cIdx} y = ${rIdx} }`] : []))
+  );
+  const support = template.supportCompanies.flatMap((slot, sIdx) =>
+    slot ? [`        ${slot.id} = { x = 0 y = ${sIdx} }`] : []
+  );
+  return [
+    'division_template = {',
+    `    name = "${template.name}"`,
+    '    regiments = {',
+    ...regiments,
+    '    }',
+    '    support = {',
+    ...support,
+    '    }',
+    '}',
+  ].join(NL);
+}

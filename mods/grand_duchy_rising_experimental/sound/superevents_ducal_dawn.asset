@@ -1,0 +1,15 @@
+# NOTE: the audio file below is NOT generated; supply sound/superevents/ducal_dawn.ogg yourself.
+sound = {
+    name = "gdx_ducal_dawn"
+    file = "superevents/ducal_dawn.ogg"
+}
+
+soundeffect = {
+    name = "gdx_ducal_dawn"
+    sounds = {
+        sound = "gdx_ducal_dawn"
+    }
+    falloff = "falloff_100"
+    is3d = no
+    volume = 1.0
+}

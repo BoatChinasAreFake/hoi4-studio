@@ -1,0 +1,29 @@
+technologies = {
+    GDR_ducal_drill_manual = {
+        research_cost = 1.0
+        start_year = 1936
+        folder = {
+            name = infantry_folder
+            position = { x = 12 y = 4 }
+        }
+        categories = {
+            infantry_weapons
+        }
+    }
+
+    GDR_fortified_valleys = {
+        research_cost = 1.5
+        start_year = 1938
+        folder = {
+            name = infantry_folder
+            position = { x = 12 y = 5 }
+        }
+        dependencies = {
+            GDR_ducal_drill_manual = 1
+        }
+        categories = {
+            infantry_weapons
+        }
+    }
+
+}

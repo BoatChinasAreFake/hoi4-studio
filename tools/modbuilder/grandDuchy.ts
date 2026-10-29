@@ -8,7 +8,11 @@
  * Run: npx tsx tools/modbuilder/build.ts
  */
 import { ClausewitzFocusParser } from '../../src/utils/clausewitzParser';
-import { generateCharacterScript, formatLocalizationYaml } from '../../src/utils/politicsGenerators';
+import { generateCharacterScript, formatLocalizationYaml, generateDiploActionScript } from '../../src/utils/politicsGenerators';
+import { generateTechnologyScript, generateDivisionTemplateScript, validateTechTreeDag } from '../../src/utils/phase4Generators';
+import type { TechNode } from '../../src/types/economy';
+import type { DivisionTemplateState, BattalionDef } from '../../src/types/military';
+import type { ScriptedDiploAction, Hoi4Language } from '../../src/types/politics';
 import { validateModDescriptor } from '../../src/utils/phase5Generators';
 import { analyzeFocusTreeDeadlocks } from '../../src/utils/tarjanDeadlockSolver';
 import type { FocusNodeData, FocusProject } from '../../src/types/focus';
@@ -360,6 +364,9 @@ const noPortrait = undefined as unknown as CharacterDef['portraits'];
 export const CHARACTERS: CharacterDef[] = [
   { token: 'GDR_general_marie_thill', name: 'Marie Thill', gender: 'female', portraits: noPortrait, corpsCommander: { skill: 3, attack: 2, defense: 4, planning: 3, logistics: 3, traits: [] } },
   { token: 'GDR_general_paul_hoffmann', name: 'Paul Hoffmann', gender: 'male', portraits: noPortrait, corpsCommander: { skill: 2, attack: 3, defense: 2, planning: 2, logistics: 2, traits: [] } },
+  { token: 'GDR_leader_charlotte_weis', name: 'Charlotte Weis', gender: 'female', portraits: noPortrait, countryLeader: { ideology: 'neutrality', traits: [], expire: '1965.1.1', id: -1 } },
+  { token: 'GDR_admiral_pierre_lenz', name: 'Pierre Lenz', gender: 'male', portraits: noPortrait, navyLeader: { skill: 2, attack: 2, defense: 2, maneuvering: 2, coordination: 2, traits: [] } },
+  { token: 'GDR_scientist_elise_roth', name: 'Elise Roth', gender: 'female', portraits: noPortrait, scientist: { traits: [], specializations: { specialization_nuclear: 2 } } },
   { token: 'GDR_adv_jean_schmit', name: 'Jean Schmit', gender: 'male', portraits: noPortrait, advisor: { allowedTag: 'LUX', slot: 'industrial_concern', ideaToken: 'GDR_adv_jean_schmit', ledger: 'civilian', cost: 100, traits: [], aiWillDo: 1 } },
   { token: 'GDR_adv_anne_weber', name: 'Anne Weber', gender: 'female', portraits: noPortrait, advisor: { allowedTag: 'LUX', slot: 'political_advisor', ideaToken: 'GDR_adv_anne_weber', ledger: 'civilian', cost: 100, traits: [], aiWillDo: 1 } },
   { token: 'GDR_adv_marc_kieffer', name: 'Marc Kieffer', gender: 'male', portraits: noPortrait, advisor: { allowedTag: 'LUX', slot: 'high_command', ideaToken: 'GDR_adv_marc_kieffer', ledger: 'army', cost: 100, traits: [], aiWillDo: 1 } },
@@ -368,6 +375,37 @@ export const CHARACTERS: CharacterDef[] = [
 function charactersScript(): string {
   return generateCharacterScript(CHARACTERS) + '\n';
 }
+
+// ---------------------------------------------------------------------------
+// Technologies, division template, diplomatic action
+// ---------------------------------------------------------------------------
+
+export const TECHS: TechNode[] = [
+  { id: 'GDR_ducal_drill_manual', name: 'Ducal Drill Manual', folder: 'infantry_folder', x: 12, y: 4, researchCost: 1.0, startYear: 1936, dependencies: [], mutuallyExclusive: [], categories: ['infantry_weapons'] },
+  { id: 'GDR_fortified_valleys', name: 'Fortified Valleys', folder: 'infantry_folder', x: 12, y: 5, researchCost: 1.5, startYear: 1938, dependencies: ['GDR_ducal_drill_manual'], mutuallyExclusive: [], categories: ['infantry_weapons'] },
+];
+
+const unit = (id: string) => ({ id }) as unknown as BattalionDef;
+export const DIVISION: DivisionTemplateState = {
+  name: 'Garde Grand-Ducale',
+  grid: [[unit('infantry'), unit('infantry'), unit('infantry'), null, null], [unit('infantry'), unit('infantry'), unit('infantry'), null, null], [unit('artillery_brigade'), null, null, null, null], [null, null, null, null, null], [null, null, null, null, null]],
+  supportCompanies: [unit('engineer'), unit('field_hospital'), null, null, null],
+  regimentalAttachments: [],
+} as unknown as DivisionTemplateState;
+
+export const DIPLO_ACTION: ScriptedDiploAction = {
+  id: 'GDR_offer_steel_partnership',
+  name: 'Offer Steel Partnership',
+  costPP: 25,
+  costCP: 0,
+  requiresAcceptance: true,
+  allowedTrigger: 'original_tag = LUX',
+  visibleTrigger: 'always = yes',
+  aiAcceptanceFormula: 'base = 40',
+  onSentEffect: '',
+  completeEffect: 'add_political_power = 10',
+  rejectEffect: '',
+};
 
 // ---------------------------------------------------------------------------
 // Decisions
@@ -509,7 +547,7 @@ GDR_is_luxembourg = {
 }
 `;
 
-const ON_ACTIONS = `on_actions = {
+const ON_ACTIONS_TEMPLATE = `on_actions = {
 \ton_startup = {
 \t\teffect = {
 \t\t\tif = {
@@ -518,6 +556,10 @@ const ON_ACTIONS = `on_actions = {
 \t\t\t\t\tset_variable = { GDR_progress = 0 }
 \t\t\t\t\trecruit_character = GDR_general_marie_thill
 \t\t\t\t\trecruit_character = GDR_general_paul_hoffmann
+\t\t\t\t\trecruit_character = GDR_leader_charlotte_weis
+\t\t\t\t\trecruit_character = GDR_admiral_pierre_lenz
+\t\t\t\t\trecruit_character = GDR_scientist_elise_roth
+__DIVISION__
 \t\t\t\t\tcountry_event = { id = gdr.1 days = 2 }
 \t\t\t\t}
 \t\t\t}
@@ -544,6 +586,9 @@ function locEntries(): LocEntry[] {
     add(`gdr.${e.n}.t`, e.title); add(`gdr.${e.n}.d`, e.desc);
     e.opts.forEach((o, i) => add(`gdr.${e.n}.${String.fromCharCode(97 + i)}`, o.name));
   }
+  for (const t of TECHS) { add(t.id, t.name); add(`${t.id}_desc`, `${t.name} improves the Grand Duchy's infantry.`); }
+  add(DIPLO_ACTION.id, DIPLO_ACTION.name);
+  add(`${DIPLO_ACTION.id}_desc`, 'Offer a steel partnership to a friendly nation.');
   const seen = new Set<string>();
   for (const c of CHARACTERS) {
     for (const key of [c.token, c.advisor?.ideaToken]) {
@@ -595,6 +640,8 @@ export function makePng(w: number, h: number, rgb: [number, number, number]): Ui
 }
 
 // ---------------------------------------------------------------------------
+const ON_ACTIONS = ON_ACTIONS_TEMPLATE.replace('__DIVISION__\n', generateDivisionTemplateScript(DIVISION).split('\n').map((l) => '\t\t\t\t\t' + l).join('\n') + '\n');
+
 // Assemble
 // ---------------------------------------------------------------------------
 
@@ -637,7 +684,16 @@ export function buildMod(): { files: ModFile[]; launcher: ModFile } {
   t('common/on_actions/GDR_on_actions.txt', ON_ACTIONS);
   t('events/GDR_events.txt', eventsScript());
 
+  const techDag = validateTechTreeDag(TECHS);
+  if (!techDag.isValid) throw new Error(`Tech tree invalid: ${JSON.stringify(techDag)}`);
+  t('common/technologies/GDR_technologies.txt', generateTechnologyScript(TECHS));
+  t('common/scripted_diplomatic_actions/GDR_diplomatic_actions.txt', generateDiploActionScript(DIPLO_ACTION));
+
   t('localisation/english/GDR_l_english.yml', formatLocalizationYaml('english', locEntries()));
+  // Same keys in German and French so the mod works for those languages (names kept; translate as needed).
+  for (const lang of ['german', 'french'] as Hoi4Language[]) {
+    t(`localisation/${lang}/GDR_l_${lang}.yml`, formatLocalizationYaml(lang, locEntries()));
+  }
 
   const val = validateModDescriptor(descriptorBody(false));
   if (!val.valid) throw new Error(`descriptor invalid: ${val.errors.join(', ')}`);
