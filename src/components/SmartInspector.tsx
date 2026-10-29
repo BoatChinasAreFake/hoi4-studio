@@ -11,7 +11,7 @@ import {
   BookmarkPlus,
   Image as ImageIcon
 } from 'lucide-react';
-import { getCachedGoalIconUrl } from '../utils/goalIcons';
+import { GoalIcon } from './GoalIcon';
 import { IconPickerModal } from './IconPickerModal';
 
 interface SmartInspectorProps {
@@ -99,8 +99,6 @@ export const SmartInspector: React.FC<SmartInspectorProps> = ({
     };
     onSaveAsTemplate(tpl);
   };
-
-  const iconPreviewUrl = getCachedGoalIconUrl(localFocus.icon);
 
   // Raw block representation for Monaco
   const rawScriptBlock = `focus = {
@@ -274,15 +272,11 @@ ${localFocus.relative_position_id ? `    relative_position_id = ${localFocus.rel
 
               <div className="flex items-center gap-2">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-[#364231] bg-[#111710] p-1">
-                  {iconPreviewUrl ? (
-                    <img
-                      src={iconPreviewUrl}
-                      alt={localFocus.icon}
-                      className="max-h-full max-w-full object-contain filter drop-shadow"
-                    />
-                  ) : (
-                    <span className="text-lg text-[#d6b878]">{localFocus.symbol || '★'}</span>
-                  )}
+                  <GoalIcon
+                    sprite={localFocus.icon}
+                    className="max-h-full max-w-full object-contain filter drop-shadow"
+                    fallback={<span className="text-lg text-[#d6b878]">{localFocus.symbol || '★'}</span>}
+                  />
                 </div>
 
                 <input

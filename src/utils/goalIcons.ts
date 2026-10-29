@@ -1,6 +1,21 @@
 // HOI4 Goal Icon Registry & Search Engine
 
 let manifestCache: Record<string, string> | null = null;
+// Components re-resolve their icon when the manifest finishes loading or an icon is imported.
+let iconVersion = 0;
+const listeners = new Set<() => void>();
+const bump = () => {
+  iconVersion++;
+  listeners.forEach((l) => l());
+};
+export function subscribeGoalIcons(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+export function getGoalIconsVersion(): number {
+  return iconVersion;
+}
+
 let manifestPromise: Promise<Record<string, string>> | null = null;
 
 export async function loadGoalIconsManifest(): Promise<Record<string, string>> {
@@ -14,52 +29,64 @@ export async function loadGoalIconsManifest(): Promise<Record<string, string>> {
     })
     .then((data) => {
       manifestCache = data;
+      bump();
       return data;
     })
     .catch((err) => {
       console.warn('Could not load goals_manifest.json:', err);
       manifestCache = {};
+      bump();
       return {};
     });
 
   return manifestPromise;
 }
 
-export function getCachedGoalIconUrl(spriteId: string): string | null {
-  if (!manifestCache || !spriteId) return null;
+/** Icons imported into the current project (sprite name -> object/data URL). They win over name guessing. */
+const customIcons = new Map<string, string>();
 
-  // Direct match
-  if (manifestCache[spriteId]) return manifestCache[spriteId];
+export function registerGoalIcon(spriteId: string, url: string): void {
+  customIcons.set(spriteId, url);
+  bump();
+}
 
-  // Try variations
-  const cleanId = spriteId.trim();
-  if (manifestCache[cleanId]) return manifestCache[cleanId];
+/** Generic icons used when nothing better loads, most neutral first. */
+const BACKUP_ICONS = ['GFX_goal_generic_political_pressure', 'GFX_goal_generic_national_unity', 'GFX_goal_generic_production'];
 
-  // If starts with GFX_goal_
-  const base = cleanId.replace(/^GFX_goal_/, '').replace(/^GFX_/, '');
-  const candidates = [
-    `GFX_goal_${base}`,
-    `GFX_${base}`,
-    `GFX_focus_${base}`,
-    `GFX_goal_focus_${base}`,
-    `GFX_goal_goal_${base}`,
-    `GFX_${base}_shine`,
-    `GFX_goal_${base}_shine`,
-  ];
-
-  for (const c of candidates) {
-    if (manifestCache[c]) return manifestCache[c];
+/**
+ * Every image worth trying for a sprite, best first: the exact sprite (imported or vanilla), close name
+ * variants, a fuzzy match, then generic backups. The UI walks this list when an image fails to load.
+ */
+export function getGoalIconCandidates(spriteId: string): string[] {
+  const out: string[] = [];
+  const add = (url: string | undefined) => {
+    if (url && !out.includes(url)) out.push(url);
+  };
+  const id = (spriteId || '').trim();
+  if (id) {
+    add(customIcons.get(id));
+    if (manifestCache) add(manifestCache[id]);
   }
-
-  // Substring match in keys
-  const lowerBase = base.toLowerCase();
-  for (const [key, url] of Object.entries(manifestCache)) {
-    if (key.toLowerCase().includes(lowerBase)) {
-      return url;
+  if (manifestCache && id) {
+    const base = id.replace(/^GFX_goal_/, '').replace(/^GFX_/, '');
+    for (const c of [`GFX_goal_${base}`, `GFX_${base}`, `GFX_focus_${base}`, `GFX_goal_focus_${base}`, `GFX_goal_goal_${base}`]) add(manifestCache[c]);
+    const lower = base.toLowerCase();
+    if (lower.length >= 4) {
+      for (const [key, url] of Object.entries(manifestCache)) {
+        if (!key.endsWith('_shine') && key.toLowerCase().includes(lower)) {
+          add(url);
+          break;
+        }
+      }
     }
   }
+  if (manifestCache) for (const b of BACKUP_ICONS) add(manifestCache[b]);
+  return out;
+}
 
-  return null;
+/** First candidate, or null when no icon data is loaded. */
+export function getCachedGoalIconUrl(spriteId: string): string | null {
+  return getGoalIconCandidates(spriteId)[0] ?? null;
 }
 
 export function searchGoalIcons(query: string, limit = 60): { name: string; url: string }[] {

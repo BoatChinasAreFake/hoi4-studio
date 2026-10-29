@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCheck, RotateCcw, Plus, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
 import type { FocusProject, FocusTemplate } from '../types/focus';
-import { getCachedGoalIconUrl } from '../utils/goalIcons';
+import { GoalIcon } from './GoalIcon';
 import { IconPickerModal } from './IconPickerModal';
 
 export const DEFAULT_TEMPLATES: FocusTemplate[] = [
@@ -193,7 +193,6 @@ export const FocusPalette: React.FC<FocusPaletteProps> = ({
 
           <div className="space-y-2">
             {templates.map((tpl) => {
-              const iconUrl = getCachedGoalIconUrl(tpl.icon);
               return (
                 <div
                   key={tpl.id}
@@ -205,17 +204,12 @@ export const FocusPalette: React.FC<FocusPaletteProps> = ({
                 >
                   {/* Icon Thumbnail or Symbol */}
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-[#111710] border border-[#364231]">
-                    {iconUrl ? (
-                      <img
-                        src={iconUrl}
-                        alt={tpl.name}
-                        className="max-h-8 max-w-8 object-contain filter drop-shadow group-hover:scale-110 transition-transform"
-                      />
-                    ) : (
-                      <span className="text-xl text-[#d6b878] font-serif">
-                        {tpl.symbol}
-                      </span>
-                    )}
+                    <GoalIcon
+                      sprite={tpl.icon}
+                      alt={tpl.name}
+                      className="max-h-8 max-w-8 object-contain filter drop-shadow group-hover:scale-110 transition-transform"
+                      fallback={<span className="text-xl text-[#d6b878] font-serif">{tpl.symbol}</span>}
+                    />
                   </div>
 
                   <div className="min-w-0 flex-1">
@@ -401,15 +395,14 @@ export const FocusPalette: React.FC<FocusPaletteProps> = ({
                   }
                   className="flex-1 rounded border border-[#364231] bg-[#111710] px-2.5 py-1.5 font-mono text-xs text-[#e3e5d9] focus:border-[#d6b878] focus:outline-none"
                 />
-                {getCachedGoalIconUrl(editingTemplate.icon) && (
-                  <div className="flex h-8 w-8 items-center justify-center rounded border border-[#364231] bg-[#111710] p-1">
-                    <img
-                      src={getCachedGoalIconUrl(editingTemplate.icon)!}
-                      alt="preview"
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  </div>
-                )}
+                <div className="flex h-8 w-8 items-center justify-center rounded border border-[#364231] bg-[#111710] p-1">
+                  <GoalIcon
+                    sprite={editingTemplate.icon}
+                    alt="preview"
+                    className="max-h-full max-w-full object-contain"
+                    fallback={<span className="text-sm text-[#d6b878]">{editingTemplate.symbol || '★'}</span>}
+                  />
+                </div>
               </div>
             </div>
 

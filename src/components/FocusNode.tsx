@@ -1,8 +1,8 @@
-import React, { memo, useState, useEffect } from 'react';
+import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { FocusNodeData } from '../types/focus';
 import { Check, Lock } from 'lucide-react';
-import { getCachedGoalIconUrl } from '../utils/goalIcons';
+import { GoalIcon } from './GoalIcon';
 
 interface FocusNodeProps {
   data: FocusNodeData;
@@ -12,15 +12,6 @@ interface FocusNodeProps {
 export const FocusNode: React.FC<FocusNodeProps> = memo(({ data, selected }) => {
   const days = Math.round(data.cost * 7);
   const status = data.status || 'available';
-
-  const [imgSrc, setImgSrc] = useState<string | null>(() => getCachedGoalIconUrl(data.icon));
-  const [imgError, setImgError] = useState(false);
-
-  useEffect(() => {
-    const url = getCachedGoalIconUrl(data.icon);
-    setImgSrc(url);
-    setImgError(false);
-  }, [data.icon]);
 
   // Selection & Status styles
   let containerClass = 'border-transparent hover:border-[#576147] hover:bg-[#a8bc7910]';
@@ -74,20 +65,17 @@ export const FocusNode: React.FC<FocusNodeProps> = memo(({ data, selected }) => 
         {days}d
       </span>
 
-      {/* Focus Badge: Real HOI4 Icon Image or Fallback Shield Emblem */}
+      {/* Focus badge: the real icon first, then backup icons, then the shield emblem */}
       <div className="relative my-1 flex h-[58px] w-[64px] items-center justify-center">
-        {imgSrc && !imgError ? (
-          <img
-            src={imgSrc}
-            alt={data.icon}
-            onError={() => setImgError(true)}
-            className="h-full w-full object-contain filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] pointer-events-none transition-transform hover:scale-105"
-          />
-        ) : (
-          <div className="hoi4-badge">
-            <span>{emblem}</span>
-          </div>
-        )}
+        <GoalIcon
+          sprite={data.icon}
+          className="h-full w-full object-contain filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] pointer-events-none transition-transform hover:scale-105"
+          fallback={
+            <div className="hoi4-badge">
+              <span>{emblem}</span>
+            </div>
+          }
+        />
 
         {status === 'completed' && (
           <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#a6bd87] text-[#101512] shadow">

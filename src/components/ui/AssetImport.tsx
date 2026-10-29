@@ -3,6 +3,7 @@ import { ImagePlus, Download } from 'lucide-react';
 import { decodeImageFile, flagFilesFromImage, focusIconFiles, resizeRgba, FLAG_SIZES, FOCUS_ICON_SIZE, type Rgba } from '../../utils/imageAssets';
 import { createZip, type ModFiles } from '../../utils/modProject';
 import { downloadBytes } from '../../utils/download';
+import { registerGoalIcon } from '../../utils/goalIcons';
 
 interface AssetImportProps {
   onNotify?: (msg: string) => void;
@@ -51,6 +52,8 @@ export const AssetImport: React.FC<AssetImportProps> = ({ onNotify }) => {
   const exportIcon = () => {
     if (!image) return;
     downloadBytes(`${prefix}_${iconId}_focus_icon.zip`, createZip(toMap(focusIconFiles(prefix, [{ id: iconId, image }]))), 'application/zip');
+    // Make the imported icon show up in the focus tree editor straight away.
+    registerGoalIcon(`GFX_goal_${prefix}_${iconId}`, toDataUrl(resizeRgba(image, FOCUS_ICON_SIZE.width, FOCUS_ICON_SIZE.height), 1));
     onNotify?.(`Exported GFX_goal_${prefix}_${iconId}`);
   };
 
