@@ -1,10 +1,11 @@
+# New tech trees need a gridbox in interface/countrytechtreeview.gui.
 technologies = {
     GDR_ducal_drill_manual = {
         research_cost = 1.0
         start_year = 1936
         folder = {
             name = infantry_folder
-            position = { x = 12 y = 4 }
+            position = { x = 0 y = 0 }
         }
         categories = {
             infantry_weapons
@@ -16,7 +17,7 @@ technologies = {
         start_year = 1938
         folder = {
             name = infantry_folder
-            position = { x = 12 y = 5 }
+            position = { x = 1 y = 0 }
         }
         dependencies = {
             GDR_ducal_drill_manual = 1

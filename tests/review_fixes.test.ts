@@ -5,6 +5,7 @@ import { lintScript } from '../src/utils/scriptCatalog';
 import { parseBmp8, applyBrush } from '../src/utils/mapFiles';
 import { doctrineSetFromNodes, generateDoctrineTracks, generateHqTemplate, generateMarketEffect } from '../src/utils/militaryExporters';
 import { buildExperimentalMod } from '../tools/modbuilder/experimental';
+import { buildMod } from '../tools/modbuilder/grandDuchy';
 import type { RaidMissionDef, RaidCategory } from '../src/types/economy';
 import type { DoctrineNodeDef, MilitaryHqDef } from '../src/types/military';
 
@@ -123,5 +124,27 @@ describe('values the game accepts', () => {
   it('buildings never ask for a map model the tool cannot create', () => {
     const text = generateBuildingsScript([{ id: 'b', name: 'B', icon: '', isProvincial: true, baseCost: 1, perLevelExtraCost: 0, maxLevel: 1, sharesSlots: false, showOnMap: true, damageFactor: 1 }]);
     expect(text).toContain('show_on_map = 0');
+  });
+});
+
+describe('validator warns about content that needs a vanilla gui edit', () => {
+  const base: [string, Uint8Array][] = [['descriptor.mod', textFile('name="x" supported_version="1.19.*" tags={ "Gameplay" }')]];
+  it('custom technologies without a gridbox', () => {
+    const files: ModFiles = new Map([...base, ['common/technologies/t.txt', textFile('technologies = { my_tech = { } }')]]);
+    expect(validateModProject(files).some((p) => p.code === 'tech-gridbox')).toBe(true);
+    files.set('interface/t.gui', textFile('gridboxtype = { name = "my_tech_tree" }'));
+    expect(validateModProject(files).some((p) => p.code === 'tech-gridbox')).toBe(false);
+  });
+  it('custom resources without a production checkbox', () => {
+    const files: ModFiles = new Map([...base, ['common/resources/r.txt', textFile('resources = { my_ore = { cic = 0.125 } }')]]);
+    expect(validateModProject(files).some((p) => p.code === 'resource-checkbox')).toBe(true);
+    files.set('interface/p.gui', textFile('checkBoxType = { name = "my_ore_checkbox" }'));
+    expect(validateModProject(files).some((p) => p.code === 'resource-checkbox')).toBe(false);
+  });
+  it('the example mods ship neither', () => {
+    for (const built of [buildMod(), buildExperimentalMod()]) {
+      const paths = built.files.map((f) => f.path);
+      expect(paths.some((p) => p.startsWith('common/technologies/') || p.startsWith('common/resources/'))).toBe(false);
+    }
   });
 });

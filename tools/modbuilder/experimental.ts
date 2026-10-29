@@ -21,8 +21,8 @@ import {
   validateModDescriptor,
 } from '../../src/utils/phase5Generators';
 import {
-  generateResourcesScript,
   generateBuildingsScript,
+  generateResourcesScript,
   generateRaidScript,
   generateSpecialProjectScript,
   generateEquipmentVariantScript,
@@ -41,6 +41,8 @@ import {
 import { flagFilesFromImage, focusIconFiles, spriteFiles } from '../../src/utils/imageAssets';
 import { generateDivisionTemplateScript } from '../../src/utils/phase4Generators';
 import { doctrineSetFromNodes, doctrineFiles, doctrineLocEntries, generateHqTemplate, generateMarketEffect } from '../../src/utils/militaryExporters';
+import { addProductionResource } from '../../src/utils/researchFolders';
+import type { VanillaSource } from './vanilla';
 import { makePng } from './grandDuchy';
 import type {
   SuperEventDef,
@@ -130,6 +132,7 @@ const FACTION: FactionDef = {
   goals: [{ id: 'gdx_open_borders', name: 'Open Borders', description: 'Keep the League\'s roads open.', rewardModifier: { production_speed_buildings_factor: 0.05 } }],
   memberTags: [TAG, 'LUX'],
 };
+
 
 
 const RESOURCES: StrategicResourceDef[] = [
@@ -237,7 +240,6 @@ function locEntries() {
     { key: AUTONOMY.id, value: AUTONOMY.name },
     { key: 'gdx_open_borders_goal_name', value: 'Open Borders' },
     { key: 'gdx_open_borders_goal_desc', value: 'Keep the League\'s roads open.' },
-    { key: RESOURCES[0].id, value: RESOURCES[0].name },
     { key: BUILDINGS[0].id, value: BUILDINGS[0].name },
     { key: RAID.id, value: RAID.name },
     { key: PROJECT.id, value: PROJECT.name },
@@ -267,7 +269,8 @@ dependencies={
 }
 ${withPath ? `path="mod/${EXP_MOD_ID}"\n` : ''}`;
 
-export function buildExperimentalMod(): { files: ModFile[]; launcher: ModFile } {
+/** With `vanilla` the mod also ships a patched production gui so its custom resource shows up (git-ignored, see vanilla.ts). */
+export function buildExperimentalMod(vanilla?: VanillaSource): { files: ModFile[]; launcher: ModFile } {
   const files: ModFile[] = [];
   // Computed up front: the country history file below is written before the other content sections run.
   const extraHistory = countryHistoryExtras({ technologies: ['infantry_weapons', 'infantry_weapons1'], ideas: ['GDX_national_spirit'] });
@@ -288,7 +291,10 @@ export function buildExperimentalMod(): { files: ModFile[]; launcher: ModFile } 
   t('common/factions/goals/GDX_goals.txt', faction.goalsScript);
   // No timed activity: the game only accepts engine-defined ids such as stage_coup, so a custom one cannot load.
 
-  t('common/resources/GDX_resources.txt', generateResourcesScript(RESOURCES));
+  if (vanilla) {
+    t('common/resources/GDX_resources.txt', generateResourcesScript(RESOURCES));
+    t('interface/countryproductionlineview.gui', addProductionResource(vanilla.read('interface/countryproductionlineview.gui'), RESOURCES[0].id, 1));
+  }
   t('common/buildings/GDX_buildings.txt', generateBuildingsScript(BUILDINGS));
   t('common/raids/GDX_raids.txt', generateRaidScript(RAID));
   t('common/special_projects/projects/GDX_projects.txt', generateSpecialProjectScript(PROJECT));
@@ -379,7 +385,7 @@ export function buildExperimentalMod(): { files: ModFile[]; launcher: ModFile } 
   for (const [path, bytes] of Object.entries(flagFilesFromImage(TAG, placeholder))) t(path, bytes);
   for (const [path, content] of Object.entries(focusIconFiles('gdx', [{ id: 'crest', image: placeholder }]))) t(path, content);
 
-  const loc = [...locEntries(), ...doctrineLoc];
+  const loc = [...locEntries(), ...(vanilla ? [{ key: RESOURCES[0].id, value: RESOURCES[0].name }] : []), ...doctrineLoc];
   for (const lang of ['english', 'german', 'french'] as Hoi4Language[]) {
     t(`localisation/${lang}/GDX_exp_l_${lang}.yml`, formatLocalizationYaml(lang, loc));
   }

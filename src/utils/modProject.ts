@@ -263,6 +263,18 @@ export function validateModProject(files: ModFiles, options: ValidateOptions = {
     if (!r.valid) add('error', 'flag-tga', p, r.error ?? 'Invalid flag TGA.');
   }
 
+  // --- content that needs a vanilla GUI file edited
+  const guiText = paths.filter((x) => x.endsWith('.gui')).map((x) => readText(files, x) ?? '').join('\n');
+  const techFiles = paths.filter((x) => x.startsWith('common/technologies/') && x.endsWith('.txt'));
+  if (techFiles.length > 0 && !/gridboxtype/i.test(guiText)) {
+    add('warning', 'tech-gridbox', techFiles[0], 'Custom technologies are placed by a gridbox in countrytechtreeview.gui; without one the game logs "Found no grid box for tech". Use the Custom Research Folder tool.');
+  }
+  for (const rf of paths.filter((x) => x.startsWith('common/resources/') && x.endsWith('.txt'))) {
+    for (const id of keysAtDepth(readText(files, rf) ?? '', 1)) {
+      if (!guiText.includes(id + '_checkbox')) add('warning', 'resource-checkbox', rf, `Resource "${id}" has no "${id}_checkbox" in a production gui; the game logs an error when the production screen opens.`);
+    }
+  }
+
   // --- vanilla singleton overrides (the classic way to break a whole game)
   const singletons = ['map/definition.csv', 'map/provinces.bmp', 'map/rivers.bmp', 'map/railways.txt', 'map/supply_nodes.txt', 'common/countries/colors.txt'];
   for (const s of singletons) {

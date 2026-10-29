@@ -159,3 +159,7 @@ Features added from studying other modding tools (ideas only; no code or text wa
 New screens: Narrative hub (Script Editor, Event Preview, Content Tools) and UI hub (Validate & Import/Export, Image Import).
 Also: Economy hub (Custom Research Folder), Map hub (Map Files: heightmap/terrain brushes, strategic regions, supply areas, straits). These load your own copies of the vanilla files in the browser and export complete replacements; nothing from the game is stored in the repo.
 Run `npm run catalog` once to build the Script Editor's autocomplete from your own game's `documentation` folder.
+
+## Example mods and vanilla files
+
+`npm run mod:build` writes the two example mods into `mods/`. If HOI4 is installed (default Steam folder, `HOI4_DIR`, or `--game <dir>`), it also derives the few vanilla files those mods must replace (tech tree gui with a gridbox for the custom techs, production gui with a checkbox for the custom resource, Luxembourg's history with the recruits). These files come from your own copy of the game, are git-ignored, and must not be redistributed; without the game installed the build simply leaves those features out. Re-run the build after a game patch.

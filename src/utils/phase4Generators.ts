@@ -368,7 +368,9 @@ export function calculateDivisionStats(template: DivisionTemplateState): Divisio
  */
 export function generateTechnologyScript(nodes: TechNode[]): string {
   const NL = String.fromCharCode(10);
-  const out: string[] = ['technologies = {'];
+  // Each tech tree is placed by a gridbox named after its root tech (e.g. infantry_weapons_tree) in countrytechtreeview.gui.
+  // New trees need one added there (see Custom Research Folder); otherwise the game logs 'Found no grid box for tech'.
+  const out: string[] = ['# New tech trees need a gridbox in interface/countrytechtreeview.gui.', 'technologies = {'];
   for (const n of nodes) {
     out.push(`    ${n.id} = {`);
     if (n.enableEquipments && n.enableEquipments.length > 0) {

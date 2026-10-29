@@ -39,8 +39,8 @@ describe('Grand Duchy Rising: Experimental Systems', () => {
 
   it('uses the vanilla keys the earlier exporters got wrong', () => {
     const get = (p: string) => text(files.find((f) => f.path === p)!);
-    expect(get('common/resources/GDX_resources.txt')).toContain('icon_frame = 1');
-    expect(get('common/resources/GDX_resources.txt')).not.toContain('cic_cost');
+    // custom resources need a production-screen checkbox the mod cannot ship, so none is generated
+    expect(files.some((f) => f.path.startsWith('common/resources/'))).toBe(false);
     expect(files.some((f) => f.path.startsWith('common/timed_activities/'))).toBe(false); // custom timed activities cannot load
     expect(get('events/SuperEvents_ducal_dawn.txt')).toContain('sound_effect = gdx_ducal_dawn');
     expect(get('music/GDX_music.txt')).toContain('music_station = "base_music"');

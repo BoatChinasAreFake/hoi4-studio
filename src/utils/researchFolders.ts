@@ -147,3 +147,76 @@ export function researchFolderLocEntries(id: string, name: string): { key: strin
     { key: `${id}_tab_tooltip`, value: name },
   ];
 }
+
+// ---------------------------------------------------------------------------
+// Placing custom technologies and showing custom resources
+// ---------------------------------------------------------------------------
+
+export interface GridBoxOptions {
+  /** Folder window to add the gridbox to, e.g. infantry_folder. */
+  folderId: string;
+  /** Root technology of the new tree. The game finds the gridbox by the name `<root>_tree`. */
+  rootTech: string;
+  /** Where the tree's top-left slot sits inside the folder. */
+  x?: number;
+  y?: number;
+}
+
+/**
+ * Techs are placed by a gridbox named after the tree's root tech (infantry_weapons -> infantry_weapons_tree).
+ * A tech whose tree has none logs "Found no grid box for tech". This adds one to a folder in the complete vanilla
+ * countrytechtreeview.gui; the tech's `folder = { name position }` then positions it inside that gridbox.
+ */
+export function addTechGridBox(gui: string, options: GridBoxOptions): string {
+  const name = `${options.rootTech}_tree`;
+  if (gui.includes(`name = "${name}"`)) throw new Error(`A gridbox named "${name}" already exists.`);
+  const folder = findNamedBlock(gui, 'containerWindowType', options.folderId);
+  if (!folder) throw new Error(`Folder window "${options.folderId}" not found in the gui.`);
+  const box = [
+    '',
+    '',
+    '\t\t\tgridboxtype = {',
+    `\t\t\t\tname = "${name}"`,
+    `\t\t\t\tposition = { x = ${options.x ?? 140} y = ${options.y ?? 1050} }`,
+    '\t\t\t\tslotsize = { width = 70 height = 70 }',
+    '\t\t\t\tformat = "LEFT"',
+    '\t\t\t}',
+    '',
+  ].join(NL);
+  const close = folder.end - 1; // the "}" that ends the folder window
+  return gui.slice(0, close) + box + '\t\t' + gui.slice(close);
+}
+
+/**
+ * Adds a resource to the production screen's resource bar in the complete vanilla countryproductionlineview.gui:
+ * an icon (a frame of GFX_resources_strip) and the `<id>_checkbox` the game looks for, and widens the bar.
+ */
+export function addProductionResource(gui: string, resourceId: string, iconFrame = 1): string {
+  if (gui.includes(`name = "${resourceId}_checkbox"`)) throw new Error(`Resource "${resourceId}" is already in the production gui.`);
+  const bar = findNamedBlock(gui, 'containerWindowType', 'resources');
+  if (!bar) throw new Error('The "resources" window was not found in the production gui.');
+  const body = gui.slice(bar.start, bar.end);
+  const xs = [...body.matchAll(/name = "[a-z_]+_icon"\s*position = \{ x=(\d+) y=\d+ \}/g)].map((m) => Number(m[1]));
+  const iconX = (xs.length ? Math.max(...xs) : 0) + 66;
+  const piece = [
+    '',
+    '\t\t\ticonType = {',
+    `\t\t\t\tname = "${resourceId}_icon"`,
+    `\t\t\t\tposition = { x=${iconX} y=2 }`,
+    '\t\t\t\tspriteType = "GFX_resources_strip"',
+    `\t\t\t\tframe = ${iconFrame}`,
+    '\t\t\t}',
+    '',
+    '\t\t\tbuttonType = {',
+    `\t\t\t\tname = "${resourceId}_checkbox"`,
+    `\t\t\t\tposition = { x = ${iconX + 28} y = 1 }`,
+    '\t\t\t\tquadTextureSprite ="GFX_generic_checkbox"',
+    '\t\t\t\tOrientation = "UPPER_LEFT"',
+    '\t\t\t\tclicksound = click_checkbox',
+    '\t\t\t}',
+    '',
+  ].join(NL);
+  const widened = body.replace(/size = \{ width = (\d+) height = 35 \}/, (_m, w) => `size = { width = ${Number(w) + 66} height = 35 }`);
+  const close = widened.lastIndexOf('}');
+  return gui.slice(0, bar.start) + widened.slice(0, close) + piece + '\t\t' + widened.slice(close) + gui.slice(bar.end);
+}

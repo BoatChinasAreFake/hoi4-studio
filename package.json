@@ -10,7 +10,8 @@
     "test": "vitest run",
     "preview": "vite preview",
     "mod:build": "tsx tools/modbuilder/build.ts",
-    "catalog": "tsx tools/buildCatalog.ts"
+    "catalog": "tsx tools/buildCatalog.ts",
+    "overhaul:build": "tsx tools/overhaul/build.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

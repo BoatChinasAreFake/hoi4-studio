@@ -9,7 +9,9 @@
  */
 import { ClausewitzFocusParser } from '../../src/utils/clausewitzParser';
 import { generateCharacterScript, formatLocalizationYaml, generateDiploActionScript } from '../../src/utils/politicsGenerators';
-import { generateTechnologyScript, generateDivisionTemplateScript, validateTechTreeDag } from '../../src/utils/phase4Generators';
+import { generateDivisionTemplateScript, generateTechnologyScript, validateTechTreeDag } from '../../src/utils/phase4Generators';
+import { addTechGridBox } from '../../src/utils/researchFolders';
+import type { VanillaSource } from './vanilla';
 import type { TechNode } from '../../src/types/economy';
 import type { DivisionTemplateState, BattalionDef } from '../../src/types/military';
 import type { ScriptedDiploAction, Hoi4Language } from '../../src/types/politics';
@@ -380,9 +382,12 @@ function charactersScript(): string {
 // Technologies, division template, diplomatic action
 // ---------------------------------------------------------------------------
 
+
+// A tech tree is placed by a gridbox named `<root tech>_tree` in the vanilla countrytechtreeview.gui. Positions are
+// relative to that gridbox, so the root sits at 0,0. These techs are only built when the game files are available.
 export const TECHS: TechNode[] = [
-  { id: 'GDR_ducal_drill_manual', name: 'Ducal Drill Manual', folder: 'infantry_folder', x: 12, y: 4, researchCost: 1.0, startYear: 1936, dependencies: [], mutuallyExclusive: [], categories: ['infantry_weapons'] },
-  { id: 'GDR_fortified_valleys', name: 'Fortified Valleys', folder: 'infantry_folder', x: 12, y: 5, researchCost: 1.5, startYear: 1938, dependencies: ['GDR_ducal_drill_manual'], mutuallyExclusive: [], categories: ['infantry_weapons'] },
+  { id: 'GDR_ducal_drill_manual', name: 'Ducal Drill Manual', folder: 'infantry_folder', x: 0, y: 0, researchCost: 1.0, startYear: 1936, dependencies: [], mutuallyExclusive: [], categories: ['infantry_weapons'] },
+  { id: 'GDR_fortified_valleys', name: 'Fortified Valleys', folder: 'infantry_folder', x: 1, y: 0, researchCost: 1.5, startYear: 1938, dependencies: ['GDR_ducal_drill_manual'], mutuallyExclusive: [], categories: ['infantry_weapons'] },
 ];
 
 const unit = (id: string) => ({ id }) as unknown as BattalionDef;
@@ -569,7 +574,7 @@ __DIVISION__
 
 function esc(s: string) { return s.replace(/\r?\n/g, '\\n'); }
 
-function locEntries(): LocEntry[] {
+function locEntries(withTechs = false): LocEntry[] {
   const out: LocEntry[] = [];
   const add = (key: string, value: string) => out.push({ key, value: esc(value) });
   for (const f of FOCUSES) { add(f.id, f.name); add(`${f.id}_desc`, f.desc); }
@@ -582,7 +587,7 @@ function locEntries(): LocEntry[] {
     e.opts.forEach((o, i) => add(`gdr.${e.n}.${String.fromCharCode(97 + i)}`, o.name));
   }
   for (const b of ['grant', 'forge', 'field', 'arsenal', 'liaison']) add(`GDR_${b}_bonus`, `Ducal ${b[0].toUpperCase()}${b.slice(1)} Bonus`);
-  for (const t of TECHS) { add(t.id, t.name); add(`${t.id}_desc`, `${t.name} improves the Grand Duchy's infantry.`); }
+  if (withTechs) for (const t of TECHS) { add(t.id, t.name); add(`${t.id}_desc`, `${t.name} improves the Grand Duchy's infantry.`); }
   add(DIPLO_ACTION.id, DIPLO_ACTION.name);
   add(`${DIPLO_ACTION.id}_desc`, 'Offer a steel partnership to a friendly nation.');
   const seen = new Set<string>();
@@ -653,7 +658,14 @@ picture="thumbnail.png"
 supported_version="1.19.*"
 ${withPath ? `path="mod/${MOD_ID}"\n` : ''}`;
 
-export function buildMod(): { files: ModFile[]; launcher: ModFile } {
+const RECRUITS = ['GDR_general_marie_thill', 'GDR_general_paul_hoffmann', 'GDR_leader_charlotte_weis', 'GDR_admiral_pierre_lenz', 'GDR_scientist_elise_roth'];
+
+/**
+ * @param vanilla the player's game files. With them the mod also ships the vanilla files it must patch (tech tree
+ *   gui with a gridbox for the custom techs; Luxembourg's history with the recruits). Those files are derived from
+ *   Paradox's and are git-ignored, so a build without the game simply leaves the custom techs out.
+ */
+export function buildMod(vanilla?: VanillaSource): { files: ModFile[]; launcher: ModFile } {
   const project = buildFocusProject();
   const analysis = analyzeTree();
   if (analysis.hasCycles) throw new Error(`Focus tree has prerequisite cycles: ${JSON.stringify(analysis.cycles)}`);
@@ -678,17 +690,27 @@ export function buildMod(): { files: ModFile[]; launcher: ModFile } {
   t('common/scripted_effects/GDR_effects.txt', SCRIPTED_EFFECTS);
   t('common/scripted_triggers/GDR_triggers.txt', SCRIPTED_TRIGGERS);
   t('common/on_actions/GDR_on_actions.txt', ON_ACTIONS);
-  t('events/GDR_events.txt', eventsScript());
+  let events = eventsScript();
+  if (vanilla) {
+    // Recruiting belongs in a history file (the game warns about it anywhere else), so move it there.
+    for (const r of RECRUITS) events = events.split(String.fromCharCode(10) + String.fromCharCode(9, 9) + 'recruit_character = ' + r).join('');
+    const lux = vanilla.read('history/countries/LUX - Luxemburg.txt');
+    const eol = lux.includes(String.fromCharCode(13, 10)) ? String.fromCharCode(13, 10) : String.fromCharCode(10);
+    t('history/countries/LUX - Luxemburg.txt', lux.replace(/\s*$/, '') + eol + eol + '# Grand Duchy Rising' + eol + RECRUITS.map((r) => 'recruit_character = ' + r).join(eol) + eol);
 
-  const techDag = validateTechTreeDag(TECHS);
-  if (!techDag.isValid) throw new Error(`Tech tree invalid: ${JSON.stringify(techDag)}`);
-  t('common/technologies/GDR_technologies.txt', generateTechnologyScript(TECHS));
+    const techDag = validateTechTreeDag(TECHS);
+    if (!techDag.isValid) throw new Error('Tech tree invalid: ' + JSON.stringify(techDag));
+    t('common/technologies/GDR_technologies.txt', generateTechnologyScript(TECHS));
+    t('interface/countrytechtreeview.gui', addTechGridBox(vanilla.read('interface/countrytechtreeview.gui'), { folderId: 'infantry_folder', rootTech: 'GDR_ducal_drill_manual' }));
+  }
+  t('events/GDR_events.txt', events);
+
   t('common/scripted_diplomatic_actions/GDR_diplomatic_actions.txt', generateDiploActionScript(DIPLO_ACTION));
 
-  t('localisation/english/GDR_l_english.yml', formatLocalizationYaml('english', locEntries()));
+  t('localisation/english/GDR_l_english.yml', formatLocalizationYaml('english', locEntries(Boolean(vanilla))));
   // Same keys in German and French so the mod works for those languages (names kept; translate as needed).
   for (const lang of ['german', 'french'] as Hoi4Language[]) {
-    t(`localisation/${lang}/GDR_l_${lang}.yml`, formatLocalizationYaml(lang, locEntries()));
+    t(`localisation/${lang}/GDR_l_${lang}.yml`, formatLocalizationYaml(lang, locEntries(Boolean(vanilla))));
   }
 
   const val = validateModDescriptor(descriptorBody(false));

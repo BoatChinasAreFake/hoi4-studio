@@ -24,7 +24,7 @@ const join = (lines: string[]) => lines.join(NL) + NL;
 // ---------------------------------------------------------------------------
 
 export function generateResourcesScript(resources: StrategicResourceDef[]): string {
-  const out: string[] = ['resources = {', ''];
+  const out: string[] = ['# A new resource also needs a checkbox in interface/countryproductionlineview.gui ("<id>_checkbox");', '# without it the game logs an error when the production screen opens.', 'resources = {', ''];
   resources.forEach((r, i) => {
     out.push(`${T}${r.id} = {`);
     out.push(`${T}${T}icon_frame = ${i + 1}`);
