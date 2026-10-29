@@ -77,7 +77,15 @@ export function applyBrush(bmp: Bmp8, brush: Brush): Delta {
   const r = Math.max(1, Math.round(brush.radius));
   const soft = brush.softness ?? 0.5;
   const { width, height, pixels } = bmp;
-  const snapshot = brush.mode === 'smooth' ? pixels.slice() : pixels;
+  // Smoothing reads neighbours that the same stroke is changing, so it works from a copy of just the brush area.
+  const x0 = Math.max(0, brush.x - r - 1), x1 = Math.min(width - 1, brush.x + r + 1);
+  const y0 = Math.max(0, brush.y - r - 1), y1 = Math.min(height - 1, brush.y + r + 1);
+  const areaW = x1 - x0 + 1;
+  let area: Uint8Array | undefined;
+  if (brush.mode === 'smooth' && x1 >= x0 && y1 >= y0) {
+    area = new Uint8Array(areaW * (y1 - y0 + 1));
+    for (let yy = y0; yy <= y1; yy++) area.set(pixels.subarray(yy * width + x0, yy * width + x1 + 1), (yy - y0) * areaW);
+  }
   const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
   for (let dy = -r; dy <= r; dy++) {
     const py = brush.y + dy;
@@ -100,7 +108,7 @@ export function applyBrush(bmp: Bmp8, brush: Brush): Delta {
           let sum = 0, n = 0;
           for (let sy = -1; sy <= 1; sy++) for (let sx = -1; sx <= 1; sx++) {
             const ny = py + sy, nx = px + sx;
-            if (ny >= 0 && ny < height && nx >= 0 && nx < width) { sum += snapshot[ny * width + nx]; n++; }
+            if (ny >= 0 && ny < height && nx >= 0 && nx < width) { sum += area![(ny - y0) * areaW + (nx - x0)]; n++; }
           }
           next = clamp(old + (sum / n - old) * falloff);
           break;

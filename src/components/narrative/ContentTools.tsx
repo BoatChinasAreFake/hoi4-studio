@@ -4,7 +4,6 @@ import {
   countryNameEntries,
   countryHistoryExtras,
   generateOobFile,
-  generateAirWings,
   generateDivisionNameGroups,
   generateDynamicModifiers,
   generateOnActions,
@@ -18,6 +17,8 @@ interface ContentToolsProps {
 type Tab = 'country' | 'oob' | 'dynamic';
 
 const NL = String.fromCharCode(10);
+const BS = String.fromCharCode(92);
+const esc = (v: string) => v.split(BS).join(BS + BS).split('"').join(BS + '"');
 const lines = (s: string) => s.split(NL).map((l) => l.trim()).filter(Boolean);
 
 const Field: React.FC<{ label: string; value: string; onChange: (v: string) => void; multiline?: boolean; mono?: boolean }> = ({ label, value, onChange, multiline, mono }) => (
@@ -65,7 +66,7 @@ export const ContentTools: React.FC<ContentToolsProps> = ({ onNotify }) => {
     }
     const entries = countryNameEntries({ tag, base: { name: baseName, adjective: baseAdj }, byIdeology });
     return {
-      loc: ['l_english:', ...entries.map((e) => ` ${e.key}:0 "${e.value}"`)].join(NL),
+      loc: ['l_english:', ...entries.map((e) => ` ${e.key}:0 "${esc(e.value)}"`)].join(NL),
       history: countryHistoryExtras({ technologies: lines(techs), characters: lines(characters), ideas: lines(ideas) }),
     };
   }, [tag, baseName, baseAdj, ideoNames, techs, characters, ideas]);
@@ -87,7 +88,7 @@ export const ContentTools: React.FC<ContentToolsProps> = ({ onNotify }) => {
     const names: Record<number, string> = {};
     lines(groupNames).forEach((n, i) => (names[i + 1] = n));
     const nameGroup = generateDivisionNameGroups([{ id: groupId, name: 'Custom names', countries: [tag], divisionTypes: ['infantry'], fallback: '%d Division', ordered: names }]);
-    return { units, nameGroup, air: generateAirWings([]) };
+    return { units, nameGroup };
   }, [oobTemplate, oobLocation, oobCount, airState, airEquip, airAmount, tag, groupId, groupNames]);
 
   // Dynamic content

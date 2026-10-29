@@ -47,6 +47,33 @@ function stripCommentsAndStrings(src: string): string {
     .join(NL);
 }
 
+/** Keys that open a block (`key = {`) at the given brace depth, regardless of indentation style. */
+export function keysAtDepth(src: string, depth: number): string[] {
+  const clean = stripCommentsAndStrings(src);
+  const keys: string[] = [];
+  let d = 0;
+  let word = '';
+  let lastWord = '';
+  for (let i = 0; i < clean.length; i++) {
+    const ch = clean[i];
+    if (/[A-Za-z0-9_.:]/.test(ch)) {
+      word += ch;
+      continue;
+    }
+    if (word) {
+      lastWord = word;
+      word = '';
+    }
+    if (ch === '=') {
+      let j = i + 1;
+      while (j < clean.length && /\s/.test(clean[j])) j++;
+      if (clean[j] === '{' && d === depth && lastWord) keys.push(lastWord);
+    } else if (ch === '{') d++;
+    else if (ch === '}') d--;
+  }
+  return keys;
+}
+
 function braceBalance(src: string): number {
   let depth = 0;
   for (const ch of stripCommentsAndStrings(src)) {
@@ -161,10 +188,11 @@ export function validateModProject(files: ModFiles, options: ValidateOptions = {
       }
     }
     if (p.startsWith('common/ideas/')) {
-      for (const m of text.matchAll(/^\t{2,3}([A-Za-z0-9_]+)\s*=\s*\{/gm)) ideaIds.set(m[1], p);
+      // ideas = { <category> = { <idea> = { ... } } }; a few mods add one more `country` level
+      for (const id of [...keysAtDepth(text, 2), ...keysAtDepth(text, 3)]) ideaIds.set(id, p);
     }
     if (p.startsWith('common/characters/')) {
-      for (const m of text.matchAll(/^\t([A-Za-z0-9_]+)\s*=\s*\{/gm)) characterIds.set(m[1], p);
+      for (const id of keysAtDepth(text, 1)) characterIds.set(id, p);
     }
     if (p.endsWith('.gfx')) {
       for (const m of text.matchAll(/\bname\s*=\s*"?(GFX_[A-Za-z0-9_]+)"?/g)) gfxDefined.add(m[1]);

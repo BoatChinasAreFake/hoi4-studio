@@ -132,7 +132,7 @@ export const HqStudio: React.FC<{ onNotify?: (msg: string) => void }> = ({ onNot
     handleUpdateHq({ staffTraits: updated });
   };
 
-  const paradoxScript = generateHqTemplate(selectedHq);
+  const paradoxScript = generateHqTemplate(selectedHq, 121 + Math.max(0, hqs.indexOf(selectedHq)));
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#101512] text-[#e3e5d9] overflow-hidden select-none">

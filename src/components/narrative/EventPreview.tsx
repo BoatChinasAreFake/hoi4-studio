@@ -12,6 +12,9 @@ interface Option {
 
 const T = String.fromCharCode(9);
 const NL = String.fromCharCode(10);
+const BS = String.fromCharCode(92);
+/** Text inside "..." in a .yml: escape backslashes and quotes, and turn real line breaks into the game's \n. */
+const esc = (v: string) => v.split(BS).join(BS + BS).split('"').join(BS + '"').split(NL).join(BS + 'n');
 
 export const EventPreview: React.FC<EventPreviewProps> = ({ onNotify }) => {
   const [ns, setNs] = useState('my');
@@ -40,9 +43,9 @@ export const EventPreview: React.FC<EventPreviewProps> = ({ onNotify }) => {
     ];
     const loc = [
       'l_english:',
-      ` ${id}.t:0 "${title}"`,
-      ` ${id}.d:0 "${desc}"`,
-      ...options.map((o, i) => ` ${id}.${String.fromCharCode(97 + i)}:0 "${o.name}"`),
+      ` ${id}.t:0 "${esc(title)}"`,
+      ` ${id}.d:0 "${esc(desc)}"`,
+      ...options.map((o, i) => ` ${id}.${String.fromCharCode(97 + i)}:0 "${esc(o.name)}"`),
     ];
     return { event: lines.join(NL), loc: loc.join(NL) };
   }, [ns, id, picture, options, title, desc]);

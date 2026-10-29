@@ -26,12 +26,23 @@ export const DOCTRINE_FOLDER: Record<DoctrineCategory, string> = {
 
 const XP_TYPE: Record<DoctrineCategory, 'army' | 'navy' | 'air'> = { land: 'army', naval: 'navy', air: 'air', special_forces: 'army' };
 
+/** What feeds mastery per folder, taken from the vanilla tracks (common/doctrines/tracks). */
+const MASTERY_SOURCES: Record<DoctrineCategory, { categories: string[]; equipment?: string[] }> = {
+  land: { categories: ['category_all_infantry'] },
+  special_forces: { categories: ['category_special_forces'] },
+  naval: { categories: [], equipment: ['screen_ship', 'capital_ship', 'submarine', 'carrier'] },
+  air: { categories: [], equipment: ['tactical_bomber', 'strategic_bomber', 'scout_plane', 'naval_bomber'] },
+};
+
 export interface DoctrineTrackDef {
   id: string;
   /** Localisation key of the track name. */
   nameKey: string;
   /** Subunit categories whose manpower feeds mastery, e.g. category_all_infantry. */
+  /** Subunit categories whose manpower feeds mastery (land, special forces). */
   categories: string[];
+  /** Equipment categories that feed mastery (naval and air tracks). */
+  equipment?: string[];
   multiplier?: number;
   background?: string;
   icon?: string;
@@ -107,9 +118,8 @@ export function generateDoctrineTracks(tracks: DoctrineTrackDef[]): string {
       `${T}icon_frame = "${t.iconFrame ?? 'GFX_doctrine_decor_land'}"`,
       `${T}mastery = {`,
       `${T}${T}multiplier = ${t.multiplier ?? 1}`,
-      `${T}${T}categories = {`,
-      ...t.categories.map((c) => `${T}${T}${T}${c}`),
-      `${T}${T}}`,
+      ...(t.categories.length > 0 ? [`${T}${T}categories = {`, ...t.categories.map((c) => `${T}${T}${T}${c}`), `${T}${T}}`] : []),
+      ...(t.equipment && t.equipment.length > 0 ? [`${T}${T}equipment = {`, ...t.equipment.map((e) => `${T}${T}${T}${e}`), `${T}${T}}`] : []),
       `${T}}`,
       '}',
       ''
@@ -175,7 +185,7 @@ export function doctrineSetFromNodes(nodes: DoctrineNodeDef[], grandId: string, 
   for (const [branch, list] of byBranch) {
     const ordered = [...list].sort((a, b) => a.level - b.level);
     const root = ordered[0];
-    tracks.push({ id: `${grandId}_${branch}`, nameKey: `${grandId.toUpperCase()}_${branch.toUpperCase()}_TRACK`, categories: ['category_all_infantry'] });
+    tracks.push({ id: `${grandId}_${branch}`, nameKey: `${grandId.toUpperCase()}_${branch.toUpperCase()}_TRACK`, ...MASTERY_SOURCES[category] });
     subdoctrines.push({
       id: root.id,
       trackId: `${grandId}_${branch}`,
@@ -223,6 +233,7 @@ const HQ_LAYOUT: Record<HqLevel, { regiment: string; count: number; support: str
   theater_command: { regiment: 'hq_motorized', count: 5, support: ['hq_support_company', 'hq_naval_liaison', 'hq_air_liaison'] },
 };
 
+/** Pass a different `templateCounter` per HQ (e.g. 121 + index) so division names do not collide. */
 export function generateHqTemplate(hq: MilitaryHqDef, templateCounter = 121): string {
   const layout = HQ_LAYOUT[hq.level];
   return join([
@@ -262,10 +273,11 @@ export function generateMarketEffect(effectName: string, config: MarketSubsidies
   const pairs = new Set<string>();
   for (const s of config.bilateralSubsidies) {
     const archetype = EQUIPMENT_ARCHETYPE[s.equipmentCategory] ?? s.equipmentCategory;
-    // cic is the subsidy size; discount % of the exchange ratio gives a readable amount.
-    const cic = Math.max(1, Math.round((s.discountPercent / 100) * config.civFactoryExchangeRatio * 10));
+    // The game has no discount or speed fields: each subsidy percent maps to one CIC of subsidy, which is the closest effect.
+    const cic = Math.max(1, Math.round(s.discountPercent));
     out.push(
       `${T}${s.buyerTag} = {`,
+      `${T}${T}# ${s.discountPercent}% discount, +${s.deliverySpeedBonusPercent}% delivery speed requested (speed has no game key)`,
       `${T}${T}add_equipment_subsidy = {`,
       `${T}${T}${T}cic = ${cic}`,
       `${T}${T}${T}equipment_type = ${archetype}`,

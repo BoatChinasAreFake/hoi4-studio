@@ -12,7 +12,6 @@ import {
   generateFactionScript,
   generateIdeologyScript,
   generateAutonomyScript,
-  generateTimedActivityScript,
   scaffoldCountryFiles,
   formatLocalizationYaml,
 } from '../../src/utils/politicsGenerators';
@@ -49,7 +48,6 @@ import type {
   FactionDef,
   IdeologyDefinition,
   AutonomyLevel,
-  TimedActivity,
   CountryWizardConfig,
   Hoi4Language,
 } from '../../src/types/politics';
@@ -133,14 +131,6 @@ const FACTION: FactionDef = {
   memberTags: [TAG, 'LUX'],
 };
 
-const TIMED: TimedActivity = {
-  id: 'gdx_border_exercise',
-  name: 'Border Exercise',
-  durationDays: 60,
-  equipmentCost: { infantry_equipment: 500 },
-  onExpireEffect: '',
-  cancelTrigger: '',
-};
 
 const RESOURCES: StrategicResourceDef[] = [
   { id: 'gdx_ducal_ore', name: 'Ducal Ore', icon: 'GFX_resources_steel', baseCicCost: 1, isCustom: true, convoysRequiredPerUnit: 0.1 },
@@ -279,7 +269,8 @@ ${withPath ? `path="mod/${EXP_MOD_ID}"\n` : ''}`;
 
 export function buildExperimentalMod(): { files: ModFile[]; launcher: ModFile } {
   const files: ModFile[] = [];
-  let extraHistory = '';
+  // Computed up front: the country history file below is written before the other content sections run.
+  const extraHistory = countryHistoryExtras({ technologies: ['infantry_weapons', 'infantry_weapons1'], ideas: ['GDX_national_spirit'] });
   let doctrineLoc: { key: string; value: string }[] = [];
   const t = (path: string, content: string | Uint8Array) => files.push({ path, content });
 
@@ -295,8 +286,7 @@ export function buildExperimentalMod(): { files: ModFile[]; launcher: ModFile } 
   const faction = generateFactionScript(FACTION);
   t('common/factions/rules/GDX_rules.txt', faction.rulesScript);
   t('common/factions/goals/GDX_goals.txt', faction.goalsScript);
-  // Timed activities are engine-defined (only ids like stage_coup exist), so a custom one cannot load; none is shipped.
-  void generateTimedActivityScript(TIMED);
+  // No timed activity: the game only accepts engine-defined ids such as stage_coup, so a custom one cannot load.
 
   t('common/resources/GDX_resources.txt', generateResourcesScript(RESOURCES));
   t('common/buildings/GDX_buildings.txt', generateBuildingsScript(BUILDINGS));
@@ -347,8 +337,6 @@ export function buildExperimentalMod(): { files: ModFile[]; launcher: ModFile } 
     templates: [template, generateHqTemplate(HQ)],
     deployments: [{ template: 'Ducal Guard', location: 3838, count: 2, name: '1st Ducal Guards', startExperience: 0.1, startEquipment: 0.8 }],
   }));
-  // Extra history lines are appended to the wizard's country history file below.
-  extraHistory = countryHistoryExtras({ technologies: ['infantry_weapons', 'infantry_weapons1'], ideas: ['GDX_national_spirit'] });
 
   // The super event window references two sprites: map them to vanilla textures so the window renders.
   t('interface/GDX_superevent.gfx', [

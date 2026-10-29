@@ -26,10 +26,14 @@ interface MonacoPosition {
   column: number;
 }
 let registered = false;
+// Providers are registered once for the whole page, so they read the catalog from module state rather than from
+// a component instance that may later unmount.
+let activeCatalog: CatalogEntry[] = [];
 
 export const ScriptWorkbench: React.FC<ScriptWorkbenchProps> = ({ onNotify }) => {
-  const [catalog, setCatalog] = useState<CatalogEntry[]>([]);
-  const catalogRef = useRef<CatalogEntry[]>([]);
+  // Start from the shared catalog so a remount keeps what was loaded before.
+  const [catalog, setCatalog] = useState<CatalogEntry[]>(activeCatalog);
+  const [mounted, setMounted] = useState(false);
   const [source, setValue] = useState('add_political_power = 50' + String.fromCharCode(10));
   const [query, setQuery] = useState('');
   const [snippetQuery, setSnippetQuery] = useState('');
@@ -48,7 +52,7 @@ export const ScriptWorkbench: React.FC<ScriptWorkbenchProps> = ({ onNotify }) =>
   }, []);
 
   useEffect(() => {
-    catalogRef.current = catalog;
+    activeCatalog = catalog;
   }, [catalog]);
 
   const loadDocs = async (files: FileList | null) => {
@@ -86,7 +90,7 @@ export const ScriptWorkbench: React.FC<ScriptWorkbenchProps> = ({ onNotify }) =>
         const word = model.getWordUntilPosition(position);
         const range = { startLineNumber: position.lineNumber, endLineNumber: position.lineNumber, startColumn: word.startColumn, endColumn: word.endColumn };
         const kindMap = { effect: monaco.languages.CompletionItemKind.Function, trigger: monaco.languages.CompletionItemKind.Property, modifier: monaco.languages.CompletionItemKind.Variable } as const;
-        const items = catalogRef.current.map((e) => ({
+        const items = activeCatalog.map((e) => ({
           label: e.name,
           kind: kindMap[e.kind],
           detail: `${e.kind}${e.scopes.length ? ' - ' + e.scopes.join(', ') : ''}`,
@@ -101,7 +105,7 @@ export const ScriptWorkbench: React.FC<ScriptWorkbenchProps> = ({ onNotify }) =>
       provideHover: (model: MonacoModel, position: MonacoPosition) => {
         const w = model.getWordAtPosition(position);
         if (!w) return null;
-        const hit = catalogRef.current.find((e) => e.name === w.word);
+        const hit = activeCatalog.find((e) => e.name === w.word);
         return hit ? { contents: [{ value: describeEntry(hit) }] } : null;
       },
     });
@@ -110,9 +114,10 @@ export const ScriptWorkbench: React.FC<ScriptWorkbenchProps> = ({ onNotify }) =>
   const onMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
+    setMounted(true);
   };
 
-  // Lint markers
+  // Lint markers; `mounted` makes this run once the editor exists, not only after the first edit.
   useEffect(() => {
     const monaco = monacoRef.current;
     const model = editorRef.current?.getModel();
@@ -130,7 +135,7 @@ export const ScriptWorkbench: React.FC<ScriptWorkbenchProps> = ({ onNotify }) =>
         severity: d.severity === 'error' ? monaco.MarkerSeverity.Error : monaco.MarkerSeverity.Warning,
       }))
     );
-  }, [source, catalog]);
+  }, [source, catalog, mounted]);
 
   const results = useMemo(() => searchCatalog(catalog, query, undefined, 30), [catalog, query]);
   const snippets = useMemo(() => searchSnippets(snippetQuery, 12), [snippetQuery]);

@@ -41,6 +41,8 @@ const BitmapEditor: React.FC<Props> = ({ onNotify }) => {
   const [undoStack, setUndoStack] = useState<Delta[]>([]);
   const [version, setVersion] = useState(0);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const stroke = useRef<Delta>([]);
+  const frame = useRef(0);
   const scale = 4; // preview is 1/4 of the real resolution
 
   const load = async (list: FileList | null) => {
@@ -83,6 +85,7 @@ const BitmapEditor: React.FC<Props> = ({ onNotify }) => {
     ctx.putImageData(img, 0, 0);
   }, [bmp, palette, version]);
 
+  // One drag is one undo step: deltas collect in `stroke` and are pushed when the button is released.
   const paint = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!bmp || e.buttons !== 1) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -90,9 +93,17 @@ const BitmapEditor: React.FC<Props> = ({ onNotify }) => {
     const y = Math.round(((e.clientY - rect.top) / rect.height) * bmp.height);
     const delta = applyBrush(bmp, { x, y, radius, mode, value });
     if (delta.length > 0) {
-      setUndoStack((s) => [...s.slice(-49), delta]);
-      setVersion((v) => v + 1);
+      stroke.current.push(...delta);
+      // Redraw at most once per animation frame however many mouse events arrive.
+      if (!frame.current) frame.current = requestAnimationFrame(() => { frame.current = 0; setVersion((v) => v + 1); });
     }
+  };
+
+  const endStroke = () => {
+    if (stroke.current.length === 0) return;
+    const done = stroke.current;
+    stroke.current = [];
+    setUndoStack((s) => [...s.slice(-49), done]);
   };
 
   const undo = () => {
@@ -123,7 +134,7 @@ const BitmapEditor: React.FC<Props> = ({ onNotify }) => {
             <button onClick={undo} disabled={undoStack.length === 0} className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#242d23] border border-[#3b4936] disabled:opacity-40"><Undo2 className="h-3.5 w-3.5" /> Undo ({undoStack.length})</button>
             <button onClick={() => downloadBytes(fileName, serializeBmp8(bmp))} className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#d6b878] text-[#1c2119] font-bold"><Download className="h-3.5 w-3.5" /> Export .bmp</button>
           </div>
-          <canvas ref={canvas} onMouseMove={paint} onMouseDown={paint} className="w-full border border-[#30392e] cursor-crosshair" />
+          <canvas ref={canvas} onMouseMove={paint} onMouseDown={paint} onMouseUp={endStroke} onMouseLeave={endStroke} className="w-full border border-[#30392e] cursor-crosshair" />
         </>
       )}
     </div>

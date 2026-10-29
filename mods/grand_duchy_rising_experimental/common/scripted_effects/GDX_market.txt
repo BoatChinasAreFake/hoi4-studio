@@ -1,7 +1,8 @@
 GDX_apply_market_subsidies = {
 	GDX = {
+		# 20% discount, +10% delivery speed requested (speed has no game key)
 		add_equipment_subsidy = {
-			cic = 10
+			cic = 20
 			equipment_type = infantry_equipment
 			seller_tags = { ENG }
 		}

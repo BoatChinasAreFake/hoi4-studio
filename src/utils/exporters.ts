@@ -75,6 +75,27 @@ const RAID_CATEGORY: Record<RaidCategory, string> = {
   infiltration_raid: 'land_infiltration_raids',
 };
 
+interface RaidProfile {
+  icon: string;
+  sound?: string;
+  /** Lines inside starting_point = { }. */
+  start: string[];
+  /** unit_requirements body lines. */
+  requirements: string[];
+  /** Equipment every raid of this kind needs unless the studio sets its own. */
+  essential: Record<string, number>;
+}
+
+// Per-category requirements copied from the vanilla raid files (common/raids/*.txt).
+const RAID_PROFILE: Record<RaidCategory, RaidProfile> = {
+  air_raid: { icon: 'GFX_facility_icon', sound: 'raid_launch_air', start: ['types = { air_base }'], requirements: ['equipment = {', '	type = { tactical_bomber }', '	amount = { min = 10 }', '}'], essential: {} },
+  paratrooper_raid: { icon: 'GFX_mine_target_icon', start: ['types = { air_base }'], requirements: ['battalion_types = {', '	paratrooper = { min = 3 }', '}'], essential: { transport_plane_equipment: 10 } },
+  commando_raid: { icon: 'GFX_other_target_icon', start: ['types = { naval_base }', 'allow_faction_buildings = yes'], requirements: ['battalion_types = {', '	marine = { min = 3 }', '}'], essential: { convoy: 40 } },
+  naval_raid: { icon: 'GFX_other_target_icon', start: ['types = { naval_base }', 'allow_faction_buildings = yes'], requirements: ['battalion_types = {', '	marine = { min = 3 }', '}'], essential: { convoy: 40 } },
+  nuclear_raid: { icon: 'GFX_facility_icon', sound: 'raid_launch_nuclear_strike', start: ['types = { air_base }'], requirements: ['equipment = {', '	type = { strategic_bomber }', '	amount = { min = 10 }', '}'], essential: { nukes: 1 } },
+  infiltration_raid: { icon: 'GFX_raid_target_icon_captured_general', start: ['building_types = { supply_node }', 'allow_faction_buildings = yes'], requirements: ['battalion_types = {', '	infantry = { min = 3 }', '}'], essential: {} },
+};
+
 export function generateRaidScript(raid: RaidMissionDef): string {
   const prep = raid.prepPhases.reduce((sum, p) => sum + p.durationDays, 0) || 30;
   const success = Math.min(0.95, Math.max(0.05, 1 - raid.detectionRisk / 100));
@@ -90,7 +111,9 @@ export function generateRaidScript(raid: RaidMissionDef): string {
         `${T}${T}${T}${T}}`,
       ]
     : [];
-  const equipment = Object.entries(raid.requiredEquipment).map(([k, v]) => `${T}${T}${T}${k} = ${v}`);
+  const profile = RAID_PROFILE[raid.category];
+  const indent = (lines: string[], n: number) => lines.map((l) => T.repeat(n) + l);
+  const equipment = Object.entries({ ...profile.essential, ...raid.requiredEquipment }).map(([k, v]) => `${T}${T}${T}${k} = ${v}`);
   return join([
     'types = {',
     '',
@@ -100,19 +123,16 @@ export function generateRaidScript(raid: RaidMissionDef): string {
     `${T}${T}days_re_enable = 60`,
     `${T}${T}command_power = ${raid.commandPower}`,
     `${T}${T}allowed = { has_dlc = "Gotterdammerung" }`,
-    `${T}${T}target_icon = GFX_facility_icon`,
-    `${T}${T}launch_sound = raid_launch_air`,
+    `${T}${T}target_icon = ${profile.icon}`,
+    ...(profile.sound ? [`${T}${T}launch_sound = ${profile.sound}`] : []),
     `${T}${T}starting_point = {`,
-    `${T}${T}${T}types = { air_base }`,
+    ...indent(profile.start, 3),
     `${T}${T}}`,
     `${T}${T}unit_requirements = {`,
-    `${T}${T}${T}equipment = {`,
-    `${T}${T}${T}${T}type = { tactical_bomber }`,
-    `${T}${T}${T}${T}amount = { min = 10 }`,
-    `${T}${T}${T}}`,
+    ...indent(profile.requirements, 3),
     `${T}${T}}`,
     `${T}${T}arrow = {`,
-    `${T}${T}${T}type = ${raid.arrowType === 'ballistic' || raid.arrowType === 'line' ? raid.arrowType : raid.arrowType}`,
+    `${T}${T}${T}type = ${raid.arrowType}`,
     `${T}${T}}`,
     `${T}${T}target_type = {`,
     `${T}${T}${T}province = any`,
@@ -139,16 +159,6 @@ export function generateRaidScript(raid: RaidMissionDef): string {
     `${T}${T}${T}}`,
     `${T}${T}}`,
     `${T}}`,
-    '}',
-  ]);
-}
-
-export function generateRaidCategoryScript(raids: RaidMissionDef[]): string {
-  const cats = Array.from(new Set(raids.map((r) => RAID_CATEGORY[r.category])));
-  return join([
-    '# Categories already exist in vanilla (common/raids/categories); only add ids that are missing there.',
-    'categories = {',
-    ...cats.flatMap((c) => [`${T}# ${c}`]),
     '}',
   ]);
 }

@@ -118,6 +118,9 @@ export interface ScriptDiagnostic {
 export function lintScript(text: string, catalog?: CatalogEntry[]): ScriptDiagnostic[] {
   const diags: ScriptDiagnostic[] = [];
   const known = catalog ? new Set(catalog.map((e) => e.name)) : undefined;
+  // Names the text defines itself (scripted effects/triggers, dynamic modifiers) and engine keys that are not effects.
+  const defined = new Set([...text.matchAll(/^\s*([A-Za-z][A-Za-z0-9_]*)\s*=\s*\{/gm)].map((m) => m[1]));
+  const structural = new Set(['add_namespace', 'is_triggered_only', 'is_good', 'is_bad', 'is_ai', 'has_dlc']);
   let depth = 0;
   const lines = text.split(NL);
   lines.forEach((raw, idx) => {
@@ -141,8 +144,8 @@ export function lintScript(text: string, catalog?: CatalogEntry[]): ScriptDiagno
     if (known) {
       for (const m of line.matchAll(/\b([a-z][a-z0-9_]{3,})\s*=\s*(?:\{|[^\s{}]+)/g)) {
         const word = m[1];
-        if (!known.has(word) && /^(add|set|remove|has|is|can|every|any|random|clr|create|give|send|start|end|transfer|annex|declare)_/.test(word)) {
-          diags.push({ line: idx + 1, message: `"${word}" is not a known effect or trigger in the loaded documentation.`, severity: 'warning' });
+        if (!known.has(word) && !defined.has(word) && !structural.has(word) && /^(add|set|remove|has|is|can|every|any|random|clr|create|give|send|start|end|transfer|annex|declare)_/.test(word)) {
+          diags.push({ line: idx + 1, message: `"${word}" is not in the loaded documentation (ignore if it is a scripted effect or trigger from your mod).`, severity: 'warning' });
         }
       }
     }

@@ -11,4 +11,9 @@ set_popularities = {
 	neutrality = 100
 }
 recruit_character = GDX_adele_marx
+set_technology = {
+	infantry_weapons = 1
+	infantry_weapons1 = 1
+}
+add_ideas = { GDX_national_spirit }
 set_oob = "GDX_1936"
