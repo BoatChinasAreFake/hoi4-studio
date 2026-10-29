@@ -1,7 +1,7 @@
 buildings = {
 
 	gdx_ducal_fort = {
-		show_on_map = 1
+		show_on_map = 0  # requested on-map display needs an entity asset
 		base_cost = 500
 		per_level_extra_cost = 500
 		icon_frame = 1

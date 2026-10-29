@@ -108,3 +108,20 @@ describe('experimental mod country history', () => {
     expect(text).toContain('set_oob = "GDX_1936"');
   });
 });
+
+import { scriptNumber } from '../src/utils/militaryExporters';
+import { generateBuildingsScript } from '../src/utils/exporters';
+
+describe('values the game accepts', () => {
+  it('turns studio percent strings into script numbers', () => {
+    expect(scriptNumber('+15%')).toBe(0.15);
+    expect(scriptNumber('-5%')).toBe(-0.05);
+    expect(scriptNumber('+5')).toBe(5);
+    expect(scriptNumber(0.2)).toBe(0.2);
+    expect(scriptNumber('MY_VAR')).toBe('MY_VAR');
+  });
+  it('buildings never ask for a map model the tool cannot create', () => {
+    const text = generateBuildingsScript([{ id: 'b', name: 'B', icon: '', isProvincial: true, baseCost: 1, perLevelExtraCost: 0, maxLevel: 1, sharesSlots: false, showOnMap: true, damageFactor: 1 }]);
+    expect(text).toContain('show_on_map = 0');
+  });
+});

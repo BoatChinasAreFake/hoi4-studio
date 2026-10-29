@@ -461,7 +461,7 @@ interface Ev { n: number; title: string; desc: string; opts: { name: string; eff
 
 export const EVENTS: Ev[] = [
   { n: 1, title: 'Winds Over the Valley', desc: 'Europe is restless, and the Grand Duchy is small. Ministers argue over what a small country can do. Whatever it is, it must start soon.',
-    opts: [{ name: 'We will make our own future.', effects: ['add_political_power = 25'] }] },
+    opts: [{ name: 'We will make our own future.', effects: ['add_political_power = 25', 'recruit_character = GDR_general_marie_thill', 'recruit_character = GDR_general_paul_hoffmann', 'recruit_character = GDR_leader_charlotte_weis', 'recruit_character = GDR_admiral_pierre_lenz', 'recruit_character = GDR_scientist_elise_roth'] }] },
   { n: 2, title: 'The Ministers Convene', desc: 'The cabinet has met to draw up the national programme. Industry, defence and finance all demand to go first.',
     opts: [
       { name: 'Industry first.', effects: ['add_political_power = 25'] },
@@ -554,11 +554,6 @@ const ON_ACTIONS_TEMPLATE = `on_actions = {
 \t\t\t\tlimit = { country_exists = LUX }
 \t\t\t\tLUX = {
 \t\t\t\t\tset_variable = { GDR_progress = 0 }
-\t\t\t\t\trecruit_character = GDR_general_marie_thill
-\t\t\t\t\trecruit_character = GDR_general_paul_hoffmann
-\t\t\t\t\trecruit_character = GDR_leader_charlotte_weis
-\t\t\t\t\trecruit_character = GDR_admiral_pierre_lenz
-\t\t\t\t\trecruit_character = GDR_scientist_elise_roth
 __DIVISION__
 \t\t\t\t\tcountry_event = { id = gdr.1 days = 2 }
 \t\t\t\t}

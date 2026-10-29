@@ -10,6 +10,11 @@ country_event = {
 		name = gdr.1.a
 		ai_chance = { base = 1 }
 		add_political_power = 25
+		recruit_character = GDR_general_marie_thill
+		recruit_character = GDR_general_paul_hoffmann
+		recruit_character = GDR_leader_charlotte_weis
+		recruit_character = GDR_admiral_pierre_lenz
+		recruit_character = GDR_scientist_elise_roth
 	}
 }
 

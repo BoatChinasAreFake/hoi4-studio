@@ -45,7 +45,8 @@ export function generateBuildingsScript(buildings: CustomBuildingDef[]): string 
   const out: string[] = ['buildings = {', ''];
   buildings.forEach((b, i) => {
     out.push(`${T}${b.id} = {`);
-    out.push(`${T}${T}show_on_map = ${b.showOnMap ? 1 : 0}`);
+    // Showing on the map needs a model entity (gfx/entities) that this tool does not create; the game logs an error without one.
+    out.push(`${T}${T}show_on_map = 0${b.showOnMap ? '  # requested on-map display needs an entity asset' : ''}`);
     out.push(`${T}${T}base_cost = ${b.baseCost}`);
     if (b.perLevelExtraCost > 0) out.push(`${T}${T}per_level_extra_cost = ${b.perLevelExtraCost}`);
     out.push(`${T}${T}icon_frame = ${i + 1}`);

@@ -80,8 +80,16 @@ export interface DoctrineSet {
   subdoctrines: SubdoctrineDef[];
 }
 
+/** Studio values like '+15%' or '+5' become script numbers (0.15 and 5). */
+export function scriptNumber(v: number | string): number | string {
+  if (typeof v === 'number') return v;
+  const m = v.trim().match(/^([+-]?\d+(?:\.\d+)?)(%?)$/);
+  if (!m) return v;
+  return m[2] ? +(Number(m[1]) / 100).toFixed(4) : Number(m[1]);
+}
+
 const modifierLines = (mods: Record<string, number | string>, indent: number) =>
-  Object.entries(mods).map(([k, v]) => `${T.repeat(indent)}${k} = ${v}`);
+  Object.entries(mods).map(([k, v]) => `${T.repeat(indent)}${k} = ${scriptNumber(v)}`);
 
 export function generateGrandDoctrine(g: GrandDoctrineDef): string {
   return join([

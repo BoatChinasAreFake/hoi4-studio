@@ -5,11 +5,6 @@ on_actions = {
 				limit = { country_exists = LUX }
 				LUX = {
 					set_variable = { GDR_progress = 0 }
-					recruit_character = GDR_general_marie_thill
-					recruit_character = GDR_general_paul_hoffmann
-					recruit_character = GDR_leader_charlotte_weis
-					recruit_character = GDR_admiral_pierre_lenz
-					recruit_character = GDR_scientist_elise_roth
 					division_template = {
 					    name = "Garde Grand-Ducale"
 					    regiments = {

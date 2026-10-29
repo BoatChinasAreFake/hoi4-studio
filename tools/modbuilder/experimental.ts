@@ -294,7 +294,7 @@ export function buildExperimentalMod(): { files: ModFile[]; launcher: ModFile } 
   t('common/special_projects/projects/GDX_projects.txt', generateSpecialProjectScript(PROJECT));
   t('common/scripted_effects/GDX_variants.txt', 'GDX_create_variants = {' + String.fromCharCode(10) + generateEquipmentVariantScript(VARIANT) + '}' + String.fromCharCode(10));
 
-  const tracks = [{ song: 'gdx_ducal_theme', assetFile: 'music/gdx_ducal_theme.ogg', chanceFactor: 1, modifiers: [{ factor: 0.5, conditions: { has_war: 'yes' } }] }];
+  const tracks = [{ song: 'gdx_ducal_theme', assetFile: 'music/hoi4mainthemeallies.ogg' /* placeholder: a vanilla track; replace with your own .ogg */, chanceFactor: 1, modifiers: [{ factor: 0.5, conditions: { has_war: 'yes' } }] }];
   t('music/GDX_music.txt', generateMusicStationScript('base_music', tracks));
   t('music/GDX_music.asset', generateMusicAssetScript(tracks));
 
