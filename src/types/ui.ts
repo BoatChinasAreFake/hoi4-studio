@@ -4,7 +4,9 @@ export type UiStudioTab =
   | 'gfx_browser'
   | 'flag_studio'
   | 'music_station'
-  | 'workshop_packager';
+  | 'workshop_packager'
+  | 'project_check'
+  | 'asset_import';
 
 export type SimulationStudioTab =
   | 'sandbox'

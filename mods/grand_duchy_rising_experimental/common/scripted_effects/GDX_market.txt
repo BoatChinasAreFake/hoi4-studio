@@ -1,0 +1,10 @@
+GDX_apply_market_subsidies = {
+	GDX = {
+		add_equipment_subsidy = {
+			cic = 10
+			equipment_type = infantry_equipment
+			seller_tags = { ENG }
+		}
+	}
+	GDX = { give_market_access = ENG }
+}

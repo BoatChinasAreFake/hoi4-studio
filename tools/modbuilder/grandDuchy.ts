@@ -586,6 +586,7 @@ function locEntries(): LocEntry[] {
     add(`gdr.${e.n}.t`, e.title); add(`gdr.${e.n}.d`, e.desc);
     e.opts.forEach((o, i) => add(`gdr.${e.n}.${String.fromCharCode(97 + i)}`, o.name));
   }
+  for (const b of ['grant', 'forge', 'field', 'arsenal', 'liaison']) add(`GDR_${b}_bonus`, `Ducal ${b[0].toUpperCase()}${b.slice(1)} Bonus`);
   for (const t of TECHS) { add(t.id, t.name); add(`${t.id}_desc`, `${t.name} improves the Grand Duchy's infantry.`); }
   add(DIPLO_ACTION.id, DIPLO_ACTION.name);
   add(`${DIPLO_ACTION.id}_desc`, 'Offer a steel partnership to a friendly nation.');

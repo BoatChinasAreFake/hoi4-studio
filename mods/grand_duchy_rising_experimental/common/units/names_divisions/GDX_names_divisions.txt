@@ -1,0 +1,17 @@
+GDX_INF_01 = {
+	name = "Ducal Infantry"
+
+	for_countries = { GDX }
+
+	can_use = { always = yes }
+
+	division_types = { "infantry" }
+
+	fallback_name = "%d Ducal Infantry"
+
+	ordered = {
+		1 = { "1st Ducal Guards" }
+		2 = { "2nd Ducal Guards" }
+	}
+}
+

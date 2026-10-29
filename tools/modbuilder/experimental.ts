@@ -17,7 +17,6 @@ import {
   formatLocalizationYaml,
 } from '../../src/utils/politicsGenerators';
 import {
-  batchGenerateFlagTgas,
   serializeGuiElement,
   computeParliamentSeats,
   validateModDescriptor,
@@ -31,6 +30,18 @@ import {
   generateMusicStationScript,
   generateMusicAssetScript,
 } from '../../src/utils/exporters';
+import {
+  countryNamesLocFiles,
+  countryHistoryExtras,
+  generateOobFile,
+  generateDivisionNameGroups,
+  generateDynamicModifiers,
+  generateOnActions,
+  generateScriptedLocalisation,
+} from '../../src/utils/contentGenerators';
+import { flagFilesFromImage, focusIconFiles, spriteFiles } from '../../src/utils/imageAssets';
+import { generateDivisionTemplateScript } from '../../src/utils/phase4Generators';
+import { doctrineSetFromNodes, doctrineFiles, doctrineLocEntries, generateHqTemplate, generateMarketEffect } from '../../src/utils/militaryExporters';
 import { makePng } from './grandDuchy';
 import type {
   SuperEventDef,
@@ -44,6 +55,7 @@ import type {
 } from '../../src/types/politics';
 import type { StrategicResourceDef, CustomBuildingDef, RaidMissionDef, SpecialProjectDef } from '../../src/types/economy';
 import type { GuiElementDef } from '../../src/types/ui';
+import type { DoctrineNodeDef, MilitaryHqDef } from '../../src/types/military';
 import type { ModularChassisDesign } from '../../src/types/military';
 
 export const EXP_MOD_ID = 'grand_duchy_rising_experimental';
@@ -189,7 +201,15 @@ const COUNTRY: CountryWizardConfig = {
   rulingParty: 'neutrality',
   leaderName: 'Adele Marx',
   leaderIdeology: 'neutrality',
+  leaderPortrait: 'GFX_gdx_portrait_leader',
 };
+
+const DOCTRINE_NODES: DoctrineNodeDef[] = [
+  { id: 'gdx_valley_defence', name: 'Valley Defence', branch: 'grand_battleplan', category: 'land', level: 1, costXp: 100, statModifiers: { army_core_defence_factor: 0.05 }, description: 'Hold the passes.', icon: 'GFX_doctrine_armored_cavalry_medium' },
+  { id: 'gdx_valley_defence_2', name: 'Valley Defence II', branch: 'grand_battleplan', category: 'land', level: 2, costXp: 0, parentDoctrineId: 'gdx_valley_defence', statModifiers: { max_planning: 0.05 }, description: 'Hold longer.', icon: 'GFX_doctrine_armored_cavalry_medium' },
+];
+
+const HQ: MilitaryHqDef = { id: 'gdx_hq', name: 'Ducal Field Army HQ', level: 'army_hq', auraRadiusProvinces: 4, staffTraits: [], assignedCommanderName: 'Marie Thill', baseSupplyBonus: 0.1, basePlanningMultiplier: 0.1, locationProvinceId: 3838 };
 
 function guiScript(): string {
   const seats = computeParliamentSeats({ crown: 12, chamber: 9, independents: 4 }, 80, 100, 100);
@@ -235,6 +255,11 @@ function locEntries() {
     { key: 'GDX_bop_chamber', value: 'Chamber' },
     { key: 'GDX_bop_crown', value: 'Crown' },
     { key: 'GDX_ducal_balance', value: 'Ducal Balance' },
+    { key: 'gdx_ducal_theme', value: 'Ducal Theme' },
+    { key: 'GDX_dm_ducal_pride', value: 'Ducal Pride' },
+    { key: 'GDX_adele_marx', value: 'Adele Marx' },
+    { key: 'GDX_NAME_DEMOCRATIC', value: 'Free Duchy' },
+    { key: 'GDX_NAME_DEFAULT', value: 'Duchy' },
   ];
 }
 
@@ -254,6 +279,8 @@ ${withPath ? `path="mod/${EXP_MOD_ID}"\n` : ''}`;
 
 export function buildExperimentalMod(): { files: ModFile[]; launcher: ModFile } {
   const files: ModFile[] = [];
+  let extraHistory = '';
+  let doctrineLoc: { key: string; value: string }[] = [];
   const t = (path: string, content: string | Uint8Array) => files.push({ path, content });
 
   t('descriptor.mod', expDescriptorBody(false));
@@ -277,7 +304,7 @@ export function buildExperimentalMod(): { files: ModFile[]; launcher: ModFile } 
   t('common/scripted_effects/GDX_variants.txt', 'GDX_create_variants = {' + String.fromCharCode(10) + generateEquipmentVariantScript(VARIANT) + '}' + String.fromCharCode(10));
 
   const tracks = [{ song: 'gdx_ducal_theme', assetFile: 'music/gdx_ducal_theme.ogg', chanceFactor: 1, modifiers: [{ factor: 0.5, conditions: { has_war: 'yes' } }] }];
-  t('music/GDX_music.txt', generateMusicStationScript('gdx_station', tracks));
+  t('music/GDX_music.txt', generateMusicStationScript('base_music', tracks));
   t('music/GDX_music.asset', generateMusicAssetScript(tracks));
 
   t('interface/GDX_parliament.gui', guiScript());
@@ -285,13 +312,85 @@ export function buildExperimentalMod(): { files: ModFile[]; launcher: ModFile } 
   // Landless country + flags. The generated state file is skipped so Luxembourg's vanilla history is not overridden.
   const country = scaffoldCountryFiles(COUNTRY);
   for (const f of country.files) {
-    if (f.path.startsWith('history/states/')) continue;
+    // Flags come from the image pipeline below; the wizard's own .yml would duplicate the names file.
+    if (f.path.startsWith('history/states/') || f.path.startsWith('gfx/flags/') || f.path.startsWith('localisation/')) continue;
+    if (f.path.startsWith('history/countries/') && typeof f.content === 'string') {
+      t(f.path, f.content + extraHistory + 'set_oob = "GDX_1936"' + String.fromCharCode(10));
+      continue;
+    }
     t(f.path, f.content);
   }
   // No common/countries/colors.txt: a mod copy would replace every vanilla country colour.
-  for (const flag of batchGenerateFlagTgas(TAG)) t(flag.path, flag.buffer);
 
-  const loc = locEntries();
+  // Wiring the balance of power needs an explicit activation; on_actions starts it for the landless country.
+  t('common/on_actions/GDX_on_actions.txt', generateOnActions([
+    { hook: 'on_startup', limit: `country_exists = ${TAG}`, effect: `${TAG} = { set_power_balance = { id = ${BOP.token} } add_dynamic_modifier = { modifier = GDX_dm_ducal_pride } }` },
+  ]));
+  t('common/dynamic_modifiers/GDX_dynamic_modifiers.txt', generateDynamicModifiers([
+    { id: 'GDX_dm_ducal_pride', icon: 'GFX_idea_generic_intel_bonus', enable: 'always = yes', modifier: { stability_factor: 0.03, political_power_gain: 0.05 } },
+  ]));
+  t('common/scripted_localisation/GDX_scripted_loc.txt', generateScriptedLocalisation([
+    { name: 'GDX_GetName', options: [{ trigger: 'has_government = democratic', key: 'GDX_NAME_DEMOCRATIC' }, { key: 'GDX_NAME_DEFAULT' }] },
+  ]));
+  t('common/units/names_divisions/GDX_names_divisions.txt', generateDivisionNameGroups([
+    { id: 'GDX_INF_01', name: 'Ducal Infantry', countries: [TAG], divisionTypes: ['infantry'], fallback: '%d Ducal Infantry', ordered: { 1: '1st Ducal Guards', 2: '2nd Ducal Guards' } },
+  ]));
+  // History file for the landless country: tech, spirits, and an order of battle in Luxembourg's capital province.
+  const template = generateDivisionTemplateScript({
+    name: 'Ducal Guard',
+    grid: [[{ id: 'infantry' }, { id: 'infantry' }, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null]],
+    supportCompanies: [null, null, null, null, null],
+    regimentalAttachments: [],
+  } as never);
+  t('history/units/GDX_1936.txt', generateOobFile({
+    templates: [template, generateHqTemplate(HQ)],
+    deployments: [{ template: 'Ducal Guard', location: 3838, count: 2, name: '1st Ducal Guards', startExperience: 0.1, startEquipment: 0.8 }],
+  }));
+  // Extra history lines are appended to the wizard's country history file below.
+  extraHistory = countryHistoryExtras({ technologies: ['infantry_weapons', 'infantry_weapons1'], ideas: ['GDX_national_spirit'] });
+
+  // The super event window references two sprites: map them to vanilla textures so the window renders.
+  t('interface/GDX_superevent.gfx', [
+    'spriteTypes = {',
+    '	spriteType = {',
+    '		name = "GFX_super_event_ducal_dawn_frame_vanilla"',
+    '		texturefile = "gfx/interface/tiles/tiled_window_thin_border.dds"',
+    '	}',
+    '	spriteType = {',
+    '		name = "GFX_super_event_ducal_dawn_button"',
+    '		texturefile = "gfx/interface/buttons/icon_button_46x46.dds"',
+    '	}',
+    '}',
+    '',
+  ].join(String.fromCharCode(10)));
+  const portrait = { width: 156, height: 210, data: new Uint8Array(156 * 210 * 4).fill(120) };
+  for (const [path, content] of Object.entries(spriteFiles('gdx', [{ id: 'portrait_leader', image: portrait, folder: 'gfx/leaders/GDX' }]))) t(path, content);
+
+  // Doctrines (grand doctrine, track, subdoctrine) in the vanilla folders, plus localisation.
+  const doctrines = doctrineSetFromNodes(DOCTRINE_NODES, 'gdx_ducal_doctrine', 'Ducal Doctrine');
+  for (const [path, content] of Object.entries(doctrineFiles(doctrines))) t(path, content);
+  doctrineLoc = doctrineLocEntries(doctrines, {});
+
+  // Market: a scripted effect using add_equipment_subsidy / give_market_access (the game has no subsidy file format).
+  t('common/scripted_effects/GDX_market.txt', generateMarketEffect('GDX_apply_market_subsidies', {
+    bilateralSubsidies: [{ buyerTag: TAG, sellerTag: 'ENG', equipmentCategory: 'infantry', discountPercent: 20, deliverySpeedBonusPercent: 10 }],
+    civFactoryExchangeRatio: 5,
+    baseDeliveryDaysPerBatch: 30,
+    tradeQuotaRules: [],
+  }));
+
+  // Names per ideology and language
+  for (const [path, bytes] of Object.entries(countryNamesLocFiles(TAG, {
+    english: { tag: TAG, base: { name: 'Free Duchy', adjective: 'Ducal' }, byIdeology: { fascism: { name: 'Ducal Reich', definite: 'the Ducal Reich', adjective: 'Ducal' } } },
+    german: { tag: TAG, base: { name: 'Freies Herzogtum', adjective: 'herzoglich' } },
+  }))) t(path, bytes);
+
+  // Imported-image pipeline: flags and a focus icon from a source image (a solid placeholder here).
+  const placeholder = { width: 164, height: 104, data: new Uint8Array(164 * 104 * 4).fill(180) };
+  for (const [path, bytes] of Object.entries(flagFilesFromImage(TAG, placeholder))) t(path, bytes);
+  for (const [path, content] of Object.entries(focusIconFiles('gdx', [{ id: 'crest', image: placeholder }]))) t(path, content);
+
+  const loc = [...locEntries(), ...doctrineLoc];
   for (const lang of ['english', 'german', 'french'] as Hoi4Language[]) {
     t(`localisation/${lang}/GDX_exp_l_${lang}.yml`, formatLocalizationYaml(lang, loc));
   }

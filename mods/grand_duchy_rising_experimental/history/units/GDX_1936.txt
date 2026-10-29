@@ -1,0 +1,46 @@
+division_template = {
+    name = "Ducal Guard"
+    regiments = {
+        infantry = { x = 0 y = 0 }
+        infantry = { x = 0 y = 1 }
+    }
+    support = {
+    }
+}
+
+# The game has no keys for aura radius, supply or planning bonuses on an HQ template; those come from the units in it.
+# Intended: aura 4 provinces, commander "Marie Thill", base location province 3838.
+division_template = {
+	name = "Ducal Field Army HQ"
+	template_counter = 121
+	is_army_hq = yes
+
+	regiments = {
+		hq_infantry = { x = 0 y = 0 }
+		hq_infantry = { x = 0 y = 1 }
+		hq_infantry = { x = 0 y = 2 }
+	}
+
+	support = {
+		hq_support_company = { x = 0 y = 0 }
+		hq_naval_liaison = { x = 0 y = 1 }
+		hq_air_liaison = { x = 0 y = 2 }
+	}
+}
+
+units = {
+	division = {
+		name = "1st Ducal Guards"
+		location = 3838
+		division_template = "Ducal Guard"
+		start_experience_factor = 0.1
+		start_equipment_factor = 0.8
+	}
+	division = {
+		name = "1st Ducal Guards"
+		location = 3838
+		division_template = "Ducal Guard"
+		start_experience_factor = 0.1
+		start_equipment_factor = 0.8
+	}
+}

@@ -6,6 +6,8 @@ import { GfxBrowser } from './GfxBrowser';
 import { FlagStudio } from './FlagStudio';
 import { MusicStationStudio } from './MusicStationStudio';
 import { WorkshopPackager } from './WorkshopPackager';
+import { ProjectCheck } from './ProjectCheck';
+import { AssetImport } from './AssetImport';
 import {
   Layers,
   Landmark,
@@ -13,6 +15,8 @@ import {
   Flag,
   Radio,
   Package,
+  ShieldCheck,
+  ImagePlus,
 } from 'lucide-react';
 
 interface UiStudioProps {
@@ -35,6 +39,8 @@ export const UiStudio: React.FC<UiStudioProps> = ({ initialTab = 'gui_builder', 
     { id: 'flag_studio', label: '1-Click Flag Studio', icon: <Flag className="h-4 w-4" /> },
     { id: 'music_station', label: 'Music Station & Radio', icon: <Radio className="h-4 w-4" /> },
     { id: 'workshop_packager', label: 'Steam Workshop Packager', icon: <Package className="h-4 w-4" /> },
+    { id: 'project_check', label: 'Validate & Import/Export', icon: <ShieldCheck className="h-4 w-4" /> },
+    { id: 'asset_import', label: 'Image Import (Flags & Icons)', icon: <ImagePlus className="h-4 w-4" /> },
   ];
 
   const handleInjectFromMinigames = (elements: GuiElementDef[]) => {
@@ -89,6 +95,8 @@ export const UiStudio: React.FC<UiStudioProps> = ({ initialTab = 'gui_builder', 
         {activeTab === 'music_station' && (
           <MusicStationStudio onNotify={onNotify} />
         )}
+        {activeTab === 'project_check' && <ProjectCheck onNotify={onNotify} />}
+        {activeTab === 'asset_import' && <AssetImport onNotify={onNotify} />}
         {activeTab === 'workshop_packager' && (
           <WorkshopPackager onNotify={onNotify} />
         )}

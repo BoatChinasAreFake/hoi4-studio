@@ -147,3 +147,15 @@ npm run tauri dev
 
 ## 📄 License
 MIT License. Hearts of Iron IV is a registered trademark of Paradox Interactive AB. HOI4 Studio is an independent modding tool suite.
+
+## Reference tools
+
+Features added from studying other modding tools (ideas only; no code or text was copied):
+
+- [Scharnhorst workbench](https://scharnhorst.hagane.works/en/): live event preview, pre-export checks, mod import and ZIP export, snippet knowledge base.
+- [ANKA mod editor](https://github.com/Veselator/ANKA_HOI4_mod_editor): problems panel, effect/trigger catalog with inline docs, image import to flags and icons, order of battle, dynamic content editors.
+- [hoi4-modmaking-skills](https://github.com/haganeworks/hoi4-modmaking-skills) (CC BY-NC-SA 4.0): used as a factual reference to check file layouts and pitfalls (balance-of-power wiring, custom music stations, ideology groups).
+
+New screens: Narrative hub (Script Editor, Event Preview, Content Tools) and UI hub (Validate & Import/Export, Image Import).
+Also: Economy hub (Custom Research Folder), Map hub (Map Files: heightmap/terrain brushes, strategic regions, supply areas, straits). These load your own copies of the vanilla files in the browser and export complete replacements; nothing from the game is stored in the repo.
+Run `npm run catalog` once to build the Script Editor's autocomplete from your own game's `documentation` folder.

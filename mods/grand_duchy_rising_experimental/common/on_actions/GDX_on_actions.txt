@@ -1,0 +1,10 @@
+on_actions = {
+	on_startup = {
+		effect = {
+			if = {
+				limit = { country_exists = GDX }
+				GDX = { set_power_balance = { id = GDX_ducal_balance } add_dynamic_modifier = { modifier = GDX_dm_ducal_pride } }
+			}
+		}
+	}
+}

@@ -24,6 +24,7 @@ import { RiverPencil } from './RiverPencil';
 import { PositionsPinPlacer } from './PositionsPinPlacer';
 import { RailwayNetworkBuilder } from './RailwayNetworkBuilder';
 import { MapLinter } from './MapLinter';
+import { MapFilesTool } from './MapFilesTool';
 import {
   Map as MapIcon,
   Paintbrush,
@@ -32,6 +33,7 @@ import {
   MapPin,
   TrainTrack,
   ShieldAlert,
+  FileCog,
 } from 'lucide-react';
 
 export type MapStudioTab =
@@ -41,7 +43,8 @@ export type MapStudioTab =
   | 'river'
   | 'pins'
   | 'railways'
-  | 'linter';
+  | 'linter'
+  | 'files';
 
 interface WorldMapStudioProps {
   initialTab?: MapStudioTab;
@@ -329,8 +332,8 @@ export const WorldMapStudio: React.FC<WorldMapStudioProps> = ({
     provinces,
   ]);
 
-  return (
-    <div className="flex h-full w-full overflow-hidden bg-[#101512]">
+  const navStrip = (
+    <>
       {/* Sub-Studio Navigation Strip */}
       <div className="flex flex-col items-center border-r border-[#30392e] bg-[#121814] w-12 py-3 gap-2 select-none z-10 shrink-0">
         {[
@@ -341,6 +344,7 @@ export const WorldMapStudio: React.FC<WorldMapStudioProps> = ({
           { tab: 'pins', label: 'Positions Pins', icon: <MapPin className="h-4 w-4" /> },
           { tab: 'railways', label: 'Railway & Supply Hubs', icon: <TrainTrack className="h-4 w-4" /> },
           { tab: 'linter', label: 'Map Integrity Linter', icon: <ShieldAlert className="h-4 w-4" /> },
+          { tab: 'files', label: 'Map Files (bitmaps, regions, supply, straits)', icon: <FileCog className="h-4 w-4" /> },
         ].map(({ tab, label, icon }) => {
           const isActive = activeTab === tab;
           return (
@@ -364,6 +368,21 @@ export const WorldMapStudio: React.FC<WorldMapStudioProps> = ({
           );
         })}
       </div>
+    </>
+  );
+
+  if (activeTab === 'files') {
+    return (
+      <div className="flex h-full w-full overflow-hidden bg-[#101512]">
+        {navStrip}
+        <MapFilesTool onNotify={onNotify} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full w-full overflow-hidden bg-[#101512]">
+      {navStrip}
 
       {/* Left Tool Sidebar Panel */}
       {activeTab === 'states' && (

@@ -1,0 +1,7 @@
+GDX_dm_ducal_pride = {
+	icon = "GFX_idea_generic_intel_bonus"
+	enable = { always = yes }
+	stability_factor = 0.03
+	political_power_gain = 0.05
+}
+

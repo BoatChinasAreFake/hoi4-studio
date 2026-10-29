@@ -11,3 +11,4 @@ set_popularities = {
 	neutrality = 100
 }
 recruit_character = GDX_adele_marx
+set_oob = "GDX_1936"

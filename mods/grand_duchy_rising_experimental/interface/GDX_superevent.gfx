@@ -1,0 +1,10 @@
+spriteTypes = {
+	spriteType = {
+		name = "GFX_super_event_ducal_dawn_frame_vanilla"
+		texturefile = "gfx/interface/tiles/tiled_window_thin_border.dds"
+	}
+	spriteType = {
+		name = "GFX_super_event_ducal_dawn_button"
+		texturefile = "gfx/interface/buttons/icon_button_46x46.dds"
+	}
+}

@@ -43,7 +43,7 @@ describe('Grand Duchy Rising: Experimental Systems', () => {
     expect(get('common/resources/GDX_resources.txt')).not.toContain('cic_cost');
     expect(get('common/timed_activities/GDX_timed_activities.txt')).toContain('equipment_need = {');
     expect(get('events/SuperEvents_ducal_dawn.txt')).toContain('sound_effect = gdx_ducal_dawn');
-    expect(get('music/GDX_music.txt')).toContain('music_station = "gdx_station"');
+    expect(get('music/GDX_music.txt')).toContain('music_station = "base_music"');
     expect(get('common/special_projects/projects/GDX_projects.txt')).toContain('specialization = specialization_land');
   });
 });

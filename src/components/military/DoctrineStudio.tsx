@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { DoctrineNodeDef, DoctrineCategory } from '../../types/military';
+import { doctrineSetFromNodes, doctrineFiles } from '../../utils/militaryExporters';
 import {
   Lock,
   Unlock,
@@ -259,11 +260,14 @@ export const DoctrineStudio: React.FC<{ onNotify?: (msg: string) => void }> = ({
     return table;
   }, [unlockedDoctrines, doctrines]);
 
-  const paradoxScript = `doctrine_tree = {
-${Array.from(unlockedDoctrines)
-  .map((id) => `    enable_doctrine = ${id}`)
-  .join('\n')}
-}`;
+  const paradoxScript = useMemo(() => {
+    const nodes = doctrines.filter((d) => d.category === activeCategory);
+    if (nodes.length === 0) return '# No doctrines in this category yet.';
+    const set = doctrineSetFromNodes(nodes, 'my_grand_doctrine', 'My Grand Doctrine');
+    return Object.entries(doctrineFiles(set))
+      .map(([path, content]) => '# ' + path + String.fromCharCode(10) + content)
+      .join(String.fromCharCode(10));
+  }, [doctrines, activeCategory]);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#101512] text-[#e3e5d9] overflow-hidden select-none">

@@ -1,0 +1,18 @@
+gdx_ducal_doctrine = {
+	folder = land
+	name = GDX_DUCAL_DOCTRINE
+	description = GDX_DUCAL_DOCTRINE_DESC
+	icon = GFX_mobile_warfare_medium
+	available = yes
+	visible = yes
+	xp_cost = 100
+	xp_type = army
+	ai_will_do = { }
+	tracks = {
+		gdx_ducal_doctrine_grand_battleplan
+	}
+	# One (empty) milestone per track, in track order.
+	milestones = {
+		{ }
+	}
+}

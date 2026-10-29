@@ -1,4 +1,4 @@
-music_station = "gdx_station"
+music_station = "base_music"
 
 music = {
 	song = "gdx_ducal_theme"

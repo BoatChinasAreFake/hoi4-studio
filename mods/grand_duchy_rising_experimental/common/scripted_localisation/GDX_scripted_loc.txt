@@ -1,0 +1,11 @@
+defined_text = {
+	name = GDX_GetName
+	text = {
+		trigger = { has_government = democratic }
+		localization_key = GDX_NAME_DEMOCRATIC
+	}
+	text = {
+		localization_key = GDX_NAME_DEFAULT
+	}
+}
+

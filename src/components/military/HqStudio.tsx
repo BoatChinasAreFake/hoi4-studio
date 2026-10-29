@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { MilitaryHqDef, HqLevel, GeneralStaffTrait } from '../../types/military';
+import { generateHqTemplate } from '../../utils/militaryExporters';
 import {
   Plus,
   Trash2,
@@ -131,20 +132,7 @@ export const HqStudio: React.FC<{ onNotify?: (msg: string) => void }> = ({ onNot
     handleUpdateHq({ staffTraits: updated });
   };
 
-  const paradoxScript = `military_headquarters = {
-    name = "${selectedHq.name}"
-    id = ${selectedHq.id}
-    level = ${selectedHq.level}
-    location = ${selectedHq.locationProvinceId}
-    commander = "${selectedHq.assignedCommanderName}"
-    
-    aura = {
-        radius_provinces = ${selectedHq.auraRadiusProvinces}
-        supply_throughput_factor = ${selectedHq.baseSupplyBonus}
-        planning_speed_factor = ${selectedHq.basePlanningMultiplier}
-        staff_traits = { ${selectedHq.staffTraits.join(' ')} }
-    }
-}`;
+  const paradoxScript = generateHqTemplate(selectedHq);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#101512] text-[#e3e5d9] overflow-hidden select-none">

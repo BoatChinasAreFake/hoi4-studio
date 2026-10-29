@@ -3,7 +3,7 @@ characters = {
 		name = "Adele Marx"
 		portraits = {
 			civilian = {
-				large = "GFX_portrait_GDX_leader"
+				large = "GFX_gdx_portrait_leader"
 			}
 		}
 		country_leader = {

@@ -1,0 +1,13 @@
+gdx_ducal_doctrine_grand_battleplan = {
+	name = GDX_DUCAL_DOCTRINE_GRAND_BATTLEPLAN_TRACK
+	background = "GFX_grand_battleplan_bg"
+	icon = "GFX_doctrine_milestone_infantry_land"
+	icon_frame = "GFX_doctrine_decor_land"
+	mastery = {
+		multiplier = 1
+		categories = {
+			category_all_infantry
+		}
+	}
+}
+

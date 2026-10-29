@@ -1,0 +1,18 @@
+gdx_valley_defence = {
+	track = gdx_ducal_doctrine_grand_battleplan
+	name = GDX_VALLEY_DEFENCE
+	description = GDX_VALLEY_DEFENCE_DESC
+	icon = GFX_doctrine_armored_cavalry_medium
+	available = yes
+	visible = yes
+	xp_cost = 100
+	xp_type = army
+	ai_will_do = { }
+	army_core_defence_factor = 0.05
+	rewards = {
+		{
+			max_planning = 0.05
+		}
+	}
+}
+

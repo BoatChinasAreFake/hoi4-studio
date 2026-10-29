@@ -4,13 +4,15 @@ import { SpecialProjectsStudio } from './SpecialProjectsStudio';
 import { RaidsStudio } from './RaidsStudio';
 import { MarketStudio } from './MarketStudio';
 import { ResourcesBuildingsStudio } from './ResourcesBuildingsStudio';
+import { ResearchFolderTool } from './ResearchFolderTool';
 import {
   FolderTree,
   Atom,
   Crosshair,
   ShoppingBag,
   Gem,
-  Cpu
+  Cpu,
+  FolderPlus
 } from 'lucide-react';
 
 export type EconomyTab =
@@ -18,7 +20,8 @@ export type EconomyTab =
   | 'special_projects'
   | 'raids'
   | 'market'
-  | 'resources';
+  | 'resources'
+  | 'research_folder';
 
 interface EconomyStudioProps {
   initialTab?: EconomyTab;
@@ -61,6 +64,11 @@ export const EconomyStudio: React.FC<EconomyStudioProps> = ({
       label: 'Resources & Custom Buildings',
       icon: <Gem className="h-3.5 w-3.5" />,
     },
+    {
+      id: 'research_folder',
+      label: 'Custom Research Folder',
+      icon: <FolderPlus className="h-3.5 w-3.5" />,
+    },
   ];
 
   return (
@@ -97,6 +105,7 @@ export const EconomyStudio: React.FC<EconomyStudioProps> = ({
         {activeTab === 'raids' && <RaidsStudio onNotify={onNotify} />}
         {activeTab === 'market' && <MarketStudio onNotify={onNotify} />}
         {activeTab === 'resources' && <ResourcesBuildingsStudio onNotify={onNotify} />}
+        {activeTab === 'research_folder' && <ResearchFolderTool onNotify={onNotify} />}
       </div>
     </div>
   );

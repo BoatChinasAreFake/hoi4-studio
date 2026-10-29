@@ -4,13 +4,18 @@ import { WorldMapStudio, type MapStudioTab } from './map/WorldMapStudio';
 import { SandboxSimulator } from './simulation/SandboxSimulator';
 import { PoliticsStudio, type PoliticsTab } from './politics/PoliticsStudio';
 import { SuperEventStudio } from './narrative/SuperEventStudio';
+import { ScriptWorkbench } from './narrative/ScriptWorkbench';
+import { EventPreview } from './narrative/EventPreview';
+import { ContentTools } from './narrative/ContentTools';
 import { MilitaryStudio, type MilitaryTab } from './military/MilitaryStudio';
 import { EconomyStudio, type EconomyTab } from './economy/EconomyStudio';
 import { UiStudio } from './ui/UiStudio';
 import { ModOptimizer } from './ui/ModOptimizer';
 import { PatchUpgrader } from './ui/PatchUpgrader';
 import type { UiStudioTab, SimulationStudioTab } from '../types/ui';
-import { GitBranch, Film, FlaskConical, HardDrive, GitMerge } from 'lucide-react';
+import { GitBranch, Film, FlaskConical, HardDrive, GitMerge, Code2, Eye, Wrench } from 'lucide-react';
+
+type NarrativeTab = 'focus_tree' | 'super_events' | 'script_editor' | 'event_preview' | 'content_tools';
 
 interface WorkspaceDispatcherProps {
   activeHub: ActivityHub;
@@ -41,7 +46,7 @@ export const WorkspaceDispatcher: React.FC<WorkspaceDispatcherProps> = ({
   onNotify,
   onSelectHub: _onSelectHub,
 }) => {
-  const [internalNarrativeTab, setInternalNarrativeTab] = useState<'focus_tree' | 'super_events'>(
+  const [internalNarrativeTab, setInternalNarrativeTab] = useState<NarrativeTab>(
     narrativeTab
   );
   const [internalSimulationTab, setInternalSimulationTab] = useState<SimulationStudioTab>(
@@ -84,6 +89,36 @@ export const WorkspaceDispatcher: React.FC<WorkspaceDispatcherProps> = ({
               >
                 <Film className="h-3.5 w-3.5" /> Super Event Studio
               </button>
+              <button
+                onClick={() => setInternalNarrativeTab('script_editor')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold transition ${
+                  internalNarrativeTab === 'script_editor'
+                    ? 'bg-[#d6b878] text-[#1c2119] font-bold shadow'
+                    : 'text-[#909b88] hover:text-[#e3e5d9] hover:bg-[#1e271c]'
+                }`}
+              >
+                <Code2 className="h-3.5 w-3.5" /> Script Editor
+              </button>
+              <button
+                onClick={() => setInternalNarrativeTab('event_preview')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold transition ${
+                  internalNarrativeTab === 'event_preview'
+                    ? 'bg-[#d6b878] text-[#1c2119] font-bold shadow'
+                    : 'text-[#909b88] hover:text-[#e3e5d9] hover:bg-[#1e271c]'
+                }`}
+              >
+                <Eye className="h-3.5 w-3.5" /> Event Preview
+              </button>
+              <button
+                onClick={() => setInternalNarrativeTab('content_tools')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold transition ${
+                  internalNarrativeTab === 'content_tools'
+                    ? 'bg-[#d6b878] text-[#1c2119] font-bold shadow'
+                    : 'text-[#909b88] hover:text-[#e3e5d9] hover:bg-[#1e271c]'
+                }`}
+              >
+                <Wrench className="h-3.5 w-3.5" /> Content Tools
+              </button>
             </div>
             <span className="text-[10px] text-[#71806b] font-mono">
               Hub 5 · Narrative & Events
@@ -91,11 +126,11 @@ export const WorkspaceDispatcher: React.FC<WorkspaceDispatcherProps> = ({
           </div>
 
           <div className="flex-1 flex overflow-hidden">
-            {internalNarrativeTab === 'focus_tree' ? (
-              <>{narrativeView}</>
-            ) : (
-              <SuperEventStudio onNotify={onNotify} />
-            )}
+            {internalNarrativeTab === 'focus_tree' && <>{narrativeView}</>}
+            {internalNarrativeTab === 'super_events' && <SuperEventStudio onNotify={onNotify} />}
+            {internalNarrativeTab === 'script_editor' && <ScriptWorkbench onNotify={onNotify} />}
+            {internalNarrativeTab === 'event_preview' && <EventPreview onNotify={onNotify} />}
+            {internalNarrativeTab === 'content_tools' && <ContentTools onNotify={onNotify} />}
           </div>
         </div>
       );

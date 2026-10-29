@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { MarketSubsidiesConfig } from '../../types/economy';
+import { generateMarketEffect } from '../../utils/militaryExporters';
 import {
   ShoppingBag,
   Plus,
@@ -129,20 +130,7 @@ export const MarketStudio: React.FC<{ onNotify?: (msg: string) => void }> = ({ o
     }));
   };
 
-  const paradoxScript = `equipment_subsidy = {
-    # International Market & Subsidies (AAT)
-    exchange_ratio = ${config.civFactoryExchangeRatio}
-    base_delivery_days = ${config.baseDeliveryDaysPerBatch}
-    
-    bilateral_subsidies = {
-${config.bilateralSubsidies
-  .map(
-    (s) =>
-      `        agreement = { buyer = ${s.buyerTag} seller = ${s.sellerTag} category = ${s.equipmentCategory} discount = ${s.discountPercent}% speed = +${s.deliverySpeedBonusPercent}% }`
-  )
-  .join('\n')}
-    }
-}`;
+  const paradoxScript = generateMarketEffect("MY_apply_market_subsidies", config);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#101512] text-[#e3e5d9] overflow-hidden select-none">
