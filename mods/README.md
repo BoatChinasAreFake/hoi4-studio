@@ -5,7 +5,7 @@ using the suite's own generators (focus-tree script, character script, BOM-safe 
 descriptor validator, Tarjan deadlock analysis).
 
 ## Contents
-- 37-focus national focus tree (industry / military / finance branches, a 3-way mutually exclusive
+- 36-focus national focus tree (industry / military / finance branches, a 3-way mutually exclusive
   strategic choice: Armed Neutrality, Benelux Pact, Western Alignment, then a capstone)
 - 17 national ideas / timed ideas, 7 decisions in a custom category, 11 events (2 random MTTH events)
 - 2 corps commanders and 3 advisors, scripted effects/triggers, an `on_startup` hook
