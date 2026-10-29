@@ -108,3 +108,33 @@ describe('province realignment', () => {
     expect(r.modifiedScript).toBe('a = { 20 10 } b = 0.10 c = 100');
   });
 });
+
+import { generateAutonomyScript, generateIdeologyScript, generateBopScript, generateFactionScript, generateDiploActionScript, generateTimedActivityScript } from '../src/utils/politicsGenerators';
+describe('memory-reconstructed generators are marked UNVERIFIED and well-formed', () => {
+  const brace = (s: string) => { const c = s.replace(/#[^\n]*/g, '').replace(/"[^"]*"/g, '""'); return (c.match(/\{/g) ?? []).length === (c.match(/\}/g) ?? []).length; };
+  const level = { id: 'dominion', name: 'D', minFreedomLevel: 0.5, manpowerInfluence: 0.1, rules: { can_not_declare_war: false, can_decline_call_to_war: true, can_be_spymaster: false, contributes_operatives: true }, modifiers: { autonomy_manpower_share: 0.3 } };
+  it('autonomy wraps levels in autonomy_state with a prefixed id', () => {
+    const s = generateAutonomyScript([level, { ...level, id: 'autonomy_colony' }]);
+    expect(s).toContain('autonomy_state = {');
+    expect(s).toContain('id = autonomy_dominion');
+    expect(s).toContain('id = autonomy_colony');
+    expect(s).toContain('UNVERIFIED');
+    expect(brace(s)).toBe(true);
+  });
+  it('ideology emits the extra vanilla group fields', () => {
+    const s = generateIdeologyScript([{ name: 'x', group: 'custom', color: [1, 2, 3], subTypes: ['x_a'], rules: { can_force_government: false, can_puppet: false, can_send_volunteers: true, can_be_spymaster: false, can_declare_war_on_same_ideology: false }, warImpactOnWorldTension: 0.5, dynamicFactionNames: ['FACTION_NAME_X_1'] }]);
+    expect(s).toContain('faction_impact_on_world_tension = 0.10');
+    expect(s).toContain('can_host_government_in_exile = yes');
+    expect(s).toContain('UNVERIFIED');
+    expect(brace(s)).toBe(true);
+  });
+  it('low-confidence generators carry a warning', () => {
+    const f = generateFactionScript({ name: 'F', leaderTag: 'AAA', ideology: 'x', memberTags: [], goals: [], rules: { leaderVetoPeace: false, canPuppetJoin: false, worldTensionThreshold: 0, offensiveWarAllowed: false, mutualDefenseTrigger: false } as never });
+    expect(f.rulesScript).toContain('UNVERIFIED (low');
+    expect(generateTimedActivityScript({ id: 't', name: 'T', durationDays: 1, equipmentCost: {}, onExpireEffect: '', cancelTrigger: '' })).toContain('placeholder');
+    const d = generateDiploActionScript({ id: 'a', name: 'A', costPP: 1, costCP: 0, requiresAcceptance: true, allowedTrigger: '', visibleTrigger: '', aiAcceptanceFormula: '', onSentEffect: '', completeEffect: '', rejectEffect: '' });
+    expect(d).toContain('a_acceptance = {');
+    expect(brace(d)).toBe(true);
+    expect(generateBopScript({ token: 'B', initialValue: 0, leftSide: 'l', rightSide: 'r', sides: [] })).toContain('UNVERIFIED');
+  });
+});

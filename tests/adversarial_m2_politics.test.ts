@@ -752,8 +752,8 @@ describe('Adversarial M2: Phase 3 Politics, Country Wizard, BoP & Localization E
 
       const script = generateIdeologyScript([ideology]);
       expect(script).toContain('technocracy = {');
-      expect(script).toContain('cybernetic_planning = { }');
-      expect(script).toContain('algorithmic_governance = { }');
+      expect(script).toMatch(/cybernetic_planning = \{\s+can_be_randomly_selected = no\s+\}/);
+      expect(script).toMatch(/algorithmic_governance = \{\s+can_be_randomly_selected = no\s+\}/);
       expect(script).toContain('color = { 70 130 180 }');
       expect(script).toContain('can_force_government = yes');
       expect(script).toContain('can_send_volunteers = no');
@@ -781,7 +781,8 @@ describe('Adversarial M2: Phase 3 Politics, Country Wizard, BoP & Localization E
       ];
 
       const script = generateAutonomyScript(levels);
-      expect(script).toContain('autonomy_integrated_protectorate = {');
+      expect(script).toContain('autonomy_state = {');
+      expect(script).toContain('id = autonomy_integrated_protectorate');
       expect(script).toContain('is_puppet = yes');
       expect(script).toContain('min_freedom_level = 0.10');
       expect(script).toContain('manpower_influence = 0.90');

@@ -167,6 +167,10 @@ export interface IdeologyDefinition {
     can_declare_war_on_same_ideology: boolean;
   };
   warImpactOnWorldTension: number;
+  /** Defaults to 0.10 when omitted. */
+  factionImpactOnWorldTension?: number;
+  /** Defaults to yes when omitted. */
+  canHostGovernmentInExile?: boolean;
   dynamicFactionNames: string[];
 }
 

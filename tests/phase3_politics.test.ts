@@ -391,7 +391,7 @@ describe('Phase 3: Politics, Leadership, Narrative & Modding Suite', () => {
       const script = generateIdeologyScript([customIdeology]);
 
       expect(script).toContain('monarchism = {');
-      expect(script).toContain('constitutional_monarchy = { }');
+      expect(script).toMatch(/constitutional_monarchy = \{\s+can_be_randomly_selected = no\s+\}/);
       expect(script).toContain('color = { 180 150 40 }');
       expect(script).toContain('can_puppet = yes');
       expect(script).toContain('can_declare_war_on_same_ideology = no');
@@ -423,7 +423,8 @@ describe('Phase 3: Politics, Leadership, Narrative & Modding Suite', () => {
     it('generates common/autonomous_states/ scripts with proper constraints', () => {
       const script = generateAutonomyScript([autonomyLvl]);
 
-      expect(script).toContain('autonomy_reichsprotektorat = {');
+      expect(script).toContain('autonomy_state = {');
+      expect(script).toContain('id = autonomy_reichsprotektorat');
       expect(script).toContain('min_freedom_level = 0.20');
       expect(script).toContain('manpower_influence = 0.80');
       expect(script).toContain('can_not_declare_war = yes');

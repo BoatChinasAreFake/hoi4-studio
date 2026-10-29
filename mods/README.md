@@ -27,3 +27,18 @@ Check `Documents/Paradox Interactive/Hearts of Iron IV/logs/error.log` after fir
 ```bash
 npm run mod:build
 ```
+
+## Generator confidence (politics studios)
+These generators were reconstructed from memory of vanilla syntax (no game files were available) and
+every output carries an `# UNVERIFIED` header comment:
+
+| Generator | Output dir | Confidence | Change |
+| --- | --- | --- | --- |
+| Autonomy | `common/autonomous_states/` | medium | wrapped in `autonomy_state = { id = ... }` |
+| Ideology | `common/ideologies/` | medium | sub-types get `can_be_randomly_selected`; added `faction_impact_on_world_tension`, `can_host_government_in_exile` |
+| Balance of Power | `common/bop/` | medium | annotated only |
+| Diplomatic actions | `common/scripted_diplomatic_actions/` | low | added `selectable`; named `ai_acceptance` sub-block |
+| Factions | faction rule/goal files | low | annotated only; key names are probably not vanilla |
+| Timed activities | `common/timed_activities/` | low | annotated only; placeholder schema |
+
+Replace the headers once each has been checked against vanilla files and `error.log`.

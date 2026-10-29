@@ -326,7 +326,8 @@ describe('Adversarial Test Suite: Milestone M2 Empirical Stress Harness', () => 
       expect(rulesScript).toContain('offensive_war_allowed = no');
       expect(rulesScript).toContain('mutual_defense_trigger = no');
       expect(rulesScript).toContain('members = { TIB }');
-      expect(goalsScript).toBe('# Faction Goals for Isolated Bastion');
+      expect(goalsScript.split('\n')[0]).toBe('# Faction Goals for Isolated Bastion');
+      expect(goalsScript).toContain('UNVERIFIED');
     });
   });
 
@@ -550,7 +551,8 @@ describe('Adversarial Test Suite: Milestone M2 Empirical Stress Harness', () => 
       };
 
       const script = generateAutonomyScript([customLevel]);
-      expect(script).toContain('autonomy_special_autonomous_republic = {');
+      expect(script).toContain('autonomy_state = {');
+      expect(script).toContain('id = autonomy_special_autonomous_republic');
       expect(script).toContain('min_freedom_level = 0.65');
       expect(script).toContain('manpower_influence = 0.35');
       expect(script).toContain('can_not_declare_war = yes');

@@ -13,6 +13,13 @@ import type {
   Hoi4Language,
 } from '../types/politics';
 
+/**
+ * Marker prepended to generators whose syntax was reconstructed from memory of vanilla files
+ * rather than checked against them (no game install was available). Remove once verified.
+ */
+export const UNVERIFIED_SYNTAX_NOTE = (dir: string, confidence: 'medium' | 'low') =>
+  `# UNVERIFIED (${confidence} confidence): syntax written from memory of vanilla ${dir}; compare with the vanilla files and check error.log.`;
+
 // ==========================================
 // 1. Super Event Scaffolder & Code Generator
 // ==========================================
@@ -546,7 +553,9 @@ export function generateCharacterScript(characters: CharacterDef[]): string {
 // ==========================================
 
 export function generateBopScript(bop: BopDefinition): string {
-  const lines: string[] = [`${bop.token} = {`];
+  // common/bop/*.txt. Layout (initial_value / left_side / right_side / range / side = { range }) matches
+  // my recollection of vanilla; key names inside ranges are UNVERIFIED (medium confidence).
+  const lines: string[] = [UNVERIFIED_SYNTAX_NOTE('common/bop/', 'medium'), `${bop.token} = {`];
   lines.push(`\tinitial_value = ${bop.initialValue.toFixed(2)}`);
   lines.push(`\tleft_side = ${bop.leftSide}`);
   lines.push(`\tright_side = ${bop.rightSide}`);
@@ -638,6 +647,8 @@ export function getActiveBopModifiers(
 export function generateFactionScript(faction: FactionDef): { rulesScript: string; goalsScript: string } {
   const rulesLines = [
     `# Faction Rules for ${faction.name}`,
+    UNVERIFIED_SYNTAX_NOTE('the faction rule/goal files', 'low'),
+    '# WARNING: field names below (leader_veto_peace_deals, world_tension_threshold, members, ...) are NOT known vanilla keys.',
     `faction_rule_${faction.name.toLowerCase().replace(/\s+/g, '_')} = {`,
     `\tname = "${faction.name}"`,
     `\tleader = ${faction.leaderTag}`,
@@ -651,7 +662,10 @@ export function generateFactionScript(faction: FactionDef): { rulesScript: strin
     `}`,
   ];
 
-  const goalLines = [`# Faction Goals for ${faction.name}`];
+  const goalLines = [
+    `# Faction Goals for ${faction.name}`,
+    UNVERIFIED_SYNTAX_NOTE('the faction rule/goal files', 'low'),
+  ];
   for (const g of faction.goals) {
     goalLines.push(`faction_goal_${g.id} = {`);
     goalLines.push(`\tname = "${g.name}"`);
@@ -676,16 +690,20 @@ export function generateFactionScript(faction: FactionDef): { rulesScript: strin
 // 8. Ideology Studio Code Generator
 // ==========================================
 
+/** common/ideologies/*.txt. Structure follows vanilla 00_ideologies.txt (UNVERIFIED, medium confidence). */
 export function generateIdeologyScript(ideologies: IdeologyDefinition[]): string {
-  const lines = ['ideologies = {'];
+  const lines = [UNVERIFIED_SYNTAX_NOTE('common/ideologies/00_ideologies.txt', 'medium'), 'ideologies = {'];
 
   for (const ideo of ideologies) {
     lines.push(`\t${ideo.name} = {`);
     lines.push(`\t\ttypes = {`);
     for (const st of ideo.subTypes) {
-      lines.push(`\t\t\t${st} = { }`);
+      lines.push(`\t\t\t${st} = {`);
+      lines.push(`\t\t\t\tcan_be_randomly_selected = no`);
+      lines.push(`\t\t\t}`);
     }
     lines.push(`\t\t}`);
+    lines.push(`\t\t# Entries are localisation keys, e.g. FACTION_NAME_${ideo.name.toUpperCase()}_1`);
     lines.push(`\t\tdynamic_faction_names = {`);
     for (const fn of ideo.dynamicFactionNames) {
       lines.push(`\t\t\t"${fn}"`);
@@ -697,7 +715,9 @@ export function generateIdeologyScript(ideologies: IdeologyDefinition[]): string
       lines.push(`\t\t\t${rk} = ${rv ? 'yes' : 'no'}`);
     }
     lines.push(`\t\t}`);
+    lines.push(`\t\tcan_host_government_in_exile = ${ideo.canHostGovernmentInExile === false ? 'no' : 'yes'}`);
     lines.push(`\t\twar_impact_on_world_tension = ${ideo.warImpactOnWorldTension.toFixed(2)}`);
+    lines.push(`\t\tfaction_impact_on_world_tension = ${(ideo.factionImpactOnWorldTension ?? 0.1).toFixed(2)}`);
     lines.push(`\t}`);
   }
 
@@ -709,11 +729,20 @@ export function generateIdeologyScript(ideologies: IdeologyDefinition[]): string
 // 9. Autonomy Progression Code Generator
 // ==========================================
 
+/**
+ * common/autonomous_states/*.txt. Vanilla wraps every level in `autonomy_state = { id = ... }`
+ * (the previous `autonomy_<id> = { }` form was not a valid top-level key). UNVERIFIED, medium confidence.
+ */
 export function generateAutonomyScript(levels: AutonomyLevel[]): string {
-  const lines = ['# Autonomy Progression Levels (common/autonomous_states/)'];
+  const lines = [
+    '# Autonomy Progression Levels (common/autonomous_states/)',
+    UNVERIFIED_SYNTAX_NOTE('common/autonomous_states/00_autonomous_states.txt', 'medium'),
+  ];
 
   for (const lvl of levels) {
-    lines.push(`autonomy_${lvl.id} = {`);
+    const id = lvl.id.startsWith('autonomy_') ? lvl.id : `autonomy_${lvl.id}`;
+    lines.push(`autonomy_state = {`);
+    lines.push(`\tid = ${id}`);
     lines.push(`\tdefault = no`);
     lines.push(`\tis_puppet = yes`);
     lines.push(`\tmin_freedom_level = ${lvl.minFreedomLevel.toFixed(2)}`);
@@ -741,7 +770,10 @@ export function generateAutonomyScript(levels: AutonomyLevel[]): string {
 // ==========================================
 
 export function generateDiploActionScript(action: ScriptedDiploAction): string {
+  // common/scripted_diplomatic_actions/*.txt. Vanilla groups AI acceptance under a named sub-block
+  // and has a `selectable` trigger. UNVERIFIED, low-to-medium confidence.
   return `# Scripted Diplomatic Action: ${action.name}
+${UNVERIFIED_SYNTAX_NOTE('common/scripted_diplomatic_actions/', 'low')}
 ${action.id} = {
     allowed = {
         ${action.allowedTrigger || 'always = yes'}
@@ -749,12 +781,17 @@ ${action.id} = {
     visible = {
         ${action.visibleTrigger || 'always = yes'}
     }
+    selectable = {
+        always = yes
+    }
     requires_acceptance = ${action.requiresAcceptance ? 'yes' : 'no'}
     cost = ${action.costPP}
     command_power = ${action.costCP}
 
     ai_acceptance = {
-        ${action.aiAcceptanceFormula || 'base = 50'}
+        ${action.id}_acceptance = {
+            ${action.aiAcceptanceFormula || 'base = 50'}
+        }
     }
 
     on_sent_effect = {
@@ -776,6 +813,8 @@ export function generateTimedActivityScript(act: TimedActivity): string {
     .join(' ');
 
   return `# Timed National Activity: ${act.name}
+${UNVERIFIED_SYNTAX_NOTE('common/timed_activities/', 'low')}
+# WARNING: I could not recall this schema; the block below is a placeholder, not known vanilla syntax.
 timed_activity_${act.id} = {
     name = "${act.name}"
     duration = ${act.durationDays}
